@@ -29,10 +29,13 @@ its release tag, cross-compiles with `GOOS=freebsd CGO_ENABLED=0 go build`,
 computes checksums, and writes `manifest.json` (mirroring upstream manifests,
 adding `freebsd` to `supported_platforms` and a `freebsd/<arch>` binary).
 
-`.github/workflows/catalog.yml` runs it on a schedule / manual dispatch: it
-builds, uploads the binaries to the rolling `catalog` release, and commits the
-refreshed `manifest.json`. Asset URLs are stable (fixed release tag); only the
-checksums change between runs.
+`.github/workflows/catalog.yml` runs it on a schedule / manual dispatch. It is
+**incremental**: only plugins whose upstream version is new (or that lack a
+FreeBSD build) are compiled. Unchanged plugins keep pointing at the release
+that built them. When there are changes it publishes a new immutable release
+tagged `catalog-<UTC timestamp>` containing just those binaries, and commits the
+refreshed `manifest.json`. When nothing changed it does nothing — no build, no
+release, no commit.
 
 Run it locally too:
 

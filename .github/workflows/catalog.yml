@@ -21,7 +21,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      TAG: catalog
       ARCHES: amd64
     steps:
       - uses: actions/checkout@v4
@@ -30,29 +29,47 @@ jobs:
         with:
           go-version: "stable"
 
-      - name: Build catalog and binaries
+      - name: Build changed plugins
+        id: build
         run: |
-          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          ts=$(date -u +%Y%m%dT%H%M%SZ)
+          echo "tag=catalog-${ts}" >> "$GITHUB_OUTPUT"
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/catalog-${ts}"
           ./scripts/build-catalog.sh "$base"
 
-      - name: Publish binaries to the rolling release
+      - name: Detect changes
+        id: detect
+        run: |
+          if [ -s built.txt ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Built:"; cat built.txt
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No new plugin versions."
+          fi
+
+      - name: Publish release
+        if: steps.detect.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" \
-              --title "FreeBSD plugin catalog" \
-              --notes "FreeBSD builds of the Silo plugin catalog. Do not delete this release: manifest.json references its asset URLs. Refreshed automatically from the upstream catalog."
-          gh release upload "$TAG" dist/* --clobber
+          {
+            echo "FreeBSD builds published in this run:"
+            echo
+            while read -r id ver arch; do echo "- \`${id}\` ${ver} (${arch})"; done < built.txt
+            echo
+            echo "_Built from the upstream catalog at https://github.com/Silo-Server/silo-plugins_"
+          } > notes.md
+          gh release create "${{ steps.build.outputs.tag }}" \
+            --title "Silo plugins (FreeBSD) — $(date -u '+%Y-%m-%d %H:%M UTC')" \
+            --notes-file notes.md
+          gh release upload "${{ steps.build.outputs.tag }}" dist/*
 
       - name: Commit the updated catalog
+        if: steps.detect.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add manifest.json
-          if git diff --cached --quiet; then
-            echo "catalog unchanged"
-          else
-            git commit -m "catalog: refresh FreeBSD plugin builds"
-            git push
-          fi
+          git commit -m "catalog: update $(wc -l < built.txt | tr -d ' ') plugin build(s)"
+          git push
