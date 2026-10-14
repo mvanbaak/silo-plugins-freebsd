@@ -21,6 +21,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -124,6 +128,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-audiobook-metadata-freebsd-amd64",
           "checksum": "e530cde2b183d5a6b11b470a701c03e6021cc2627b83f99bad66de317533fb2b"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-audiobook-metadata-freebsd-arm64",
+          "checksum": "430d4726bf03235bbf305e6677f93c19dc01b2a7fba4a2446ed613da0a45b0bb"
         }
       }
     },
@@ -148,6 +156,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -564,6 +576,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-auth-ldap-freebsd-amd64",
           "checksum": "afa99ce90da981de1fbfc0494d03274e1d8df0dace6661d5729ca1229f694fd1"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-auth-ldap-freebsd-arm64",
+          "checksum": "290aa6ea6448de908c0c9e7dd355ca3348ed8bc30137054227300f6eda85dff9"
         }
       }
     },
@@ -588,6 +604,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -967,6 +987,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-auth-oidc-freebsd-amd64",
           "checksum": "1629e8690d2f8cb734f60315e4f6f96c9324812f29e59b01fb822abb7072664c"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-auth-oidc-freebsd-arm64",
+          "checksum": "38e72639f5bc284c675141e795d356a0e962b7c27b8af18daa2109c81679c937"
         }
       }
     },
@@ -991,6 +1015,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1020,6 +1048,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-autoscan-arr-freebsd-amd64",
           "checksum": "ef9fa13815ab066ae0002c16579bcb475cd80fee7a39e840539a5b8b89b47070"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-autoscan-arr-freebsd-arm64",
+          "checksum": "8df044d039c867a0b151dba32c7bfc68bb59e31aed78891be0cf42da9602ae0d"
         }
       }
     },
@@ -1044,6 +1076,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1155,6 +1191,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-ebook-metadata-freebsd-amd64",
           "checksum": "011077848150b1e03bfe30277961f6bb58b0cce690c8b32b80fe274c26361649"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-ebook-metadata-freebsd-arm64",
+          "checksum": "51f50fe50a1ec3477b788fe3a76fa9374ae51818a885d9515f8297a16f04c41b"
         }
       }
     },
@@ -1179,6 +1219,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1292,6 +1336,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-manga-metadata-freebsd-amd64",
           "checksum": "5a6d001e315f8b1f626dbc60092c45567dff44451925cd6247ff774fc35796e5"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-manga-metadata-freebsd-arm64",
+          "checksum": "7fa1a537b261285fc713371418a651fc9105f394753e6bc023cba12879ace810"
         }
       }
     },
@@ -1316,6 +1364,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1399,6 +1451,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-mdblist-freebsd-amd64",
           "checksum": "0818e88ed3f68453f93a9f613b2a80ae588ede38451dbe349aac26e9275c641a"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-mdblist-freebsd-arm64",
+          "checksum": "995b42c244b798fec3e05b053f0e875457db379a027c812b839309e0ed4c1209"
         }
       }
     },
@@ -1423,6 +1479,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1665,6 +1725,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-requests-arr-freebsd-amd64",
           "checksum": "e86d7d0beebe6b8fa94ec33d0718cd76e4e66c06cfb4134029eb8c0edd9976bd"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-requests-arr-freebsd-arm64",
+          "checksum": "069e46d155faaacf18405b6cbf5ee2ad30654505995fef97a49f2ee5126e6de8"
         }
       }
     },
@@ -1689,6 +1753,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1771,6 +1839,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-requests-seerr-freebsd-amd64",
           "checksum": "74e6262695779e42be2b1faa0b72d41813802f02c377bdc8bec2b75c671f9736"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-requests-seerr-freebsd-arm64",
+          "checksum": "498802f6eaf4f2fd3e3e3d6f53c8f9282a78f0f63bc0170428d042c5b18ecfda"
         }
       }
     },
@@ -1795,6 +1867,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1858,6 +1934,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-sportarr-freebsd-amd64",
           "checksum": "5e4dbe2a029ddf132fc1544ba8122432105588e34211df692b66f6081a4e4094"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-sportarr-freebsd-arm64",
+          "checksum": "893e73fe08a8026b9023beed73655249b3f474fb8ccac73839933e6e54db8f5a"
         }
       }
     },
@@ -1882,6 +1962,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -1937,6 +2021,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-theintrodb-freebsd-amd64",
           "checksum": "d1ff39797e0e1292a09bfbde8b6d97fc5dd5ad8f923130e73fd2d3908fb72fe4"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-theintrodb-freebsd-arm64",
+          "checksum": "16875c5270b0baa089ea120c42ea3bc4d405d6d561c5f725e8095af87bdeb043"
         }
       }
     },
@@ -1961,6 +2049,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -2010,6 +2102,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-tmdb-freebsd-amd64",
           "checksum": "a2b09f8568640ff77aa290474eb22d9578922ac22572956b2d117293c4df9582"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-tmdb-freebsd-arm64",
+          "checksum": "f334a2d818d66c4215f0d6f8e3112aea73d81759cbd4322c783e356761434500"
         }
       }
     },
@@ -2034,6 +2130,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -2082,6 +2182,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-tvdb-freebsd-amd64",
           "checksum": "1051c8116ac8b34ce1a74583f8d4670140176172b436b080dfb89d2030bf1182"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-tvdb-freebsd-arm64",
+          "checksum": "6ac670b4d7eb9b5c02f1ee7e280361196f64dd62571f179bb4f76e8d0264e853"
         }
       }
     },
@@ -2106,6 +2210,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -2179,6 +2287,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-watchprovider-floppy-freebsd-amd64",
           "checksum": "f69d84723da965715cbbddfc9a09ce3b6d9ef9f903ecc2ca704f0cc0b23f2030"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-watchprovider-floppy-freebsd-arm64",
+          "checksum": "da7cf4252fe770f66c52dbedd00efd20a76680df63cc68ba509d8624984bdbd4"
         }
       }
     },
@@ -2203,6 +2315,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -2260,6 +2376,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-watchprovider-mdblist-freebsd-amd64",
           "checksum": "a6a5f0cfa2fc86df8cc6e5ec7a4783c99ece57646f92b69fd730f51ae6630551"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-watchprovider-mdblist-freebsd-arm64",
+          "checksum": "1af613e470a2de0e8a656748526b31a46e55dfa8753303748ee75b9c96997175"
         }
       }
     },
@@ -2284,6 +2404,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -2371,6 +2495,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-watchprovider-simkl-freebsd-amd64",
           "checksum": "b7cf5c0720c7712682480fdc70216a638f7f86592b83bed9fc84e2bb0527a984"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-watchprovider-simkl-freebsd-arm64",
+          "checksum": "854b014c1947639397c745f33574d3a84fc810a85046ed4f8409fb1a8895beed"
         }
       }
     },
@@ -2395,6 +2523,10 @@
           {
             "os": "freebsd",
             "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
           }
         ],
         "capabilities": [
@@ -2484,6 +2616,10 @@
         "freebsd/amd64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-watchprovider-trakt-freebsd-amd64",
           "checksum": "7ccdb71a749c7d1e059f9312e5af85db02ae4f5608317bda6d7fd5cb3999a074"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-watchprovider-trakt-freebsd-arm64",
+          "checksum": "864215dc817eab2a47df3fea5fb0d2368f475559885834c4ca8ab4f6aee65d6b"
         }
       }
     }
