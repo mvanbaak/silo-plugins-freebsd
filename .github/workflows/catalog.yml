@@ -1,0 +1,58 @@
+name: catalog
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - ".github/workflows/catalog.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: catalog
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TAG: catalog
+      ARCHES: amd64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Build catalog and binaries
+        run: |
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          ./scripts/build-catalog.sh "$base"
+
+      - name: Publish binaries to the rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" \
+              --title "FreeBSD plugin catalog" \
+              --notes "FreeBSD builds of the Silo plugin catalog. Do not delete this release: manifest.json references its asset URLs. Refreshed automatically from the upstream catalog."
+          gh release upload "$TAG" dist/* --clobber
+
+      - name: Commit the updated catalog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          if git diff --cached --quiet; then
+            echo "catalog unchanged"
+          else
+            git commit -m "catalog: refresh FreeBSD plugin builds"
+            git push
+          fi
