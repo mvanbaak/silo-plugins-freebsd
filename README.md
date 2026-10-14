@@ -44,8 +44,8 @@ GO=go126 ./scripts/build-catalog.sh \
   https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog
 ```
 
-`ARCHES` defaults to `amd64`; set e.g. `ARCHES="amd64 arm64"` for arm64 as well.
-`ALLOWLIST=/path/to/ids.txt` restricts which plugins are built.
+`ARCHES` defaults to `amd64`; the workflow builds `amd64` and `arm64`. Set
+`ALLOWLIST=/path/to/ids.txt` to restrict which plugins are built.
 
 ## Licensing
 

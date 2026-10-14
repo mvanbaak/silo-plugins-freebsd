@@ -1,6 +1,6 @@
 #!/bin/sh
-# Incrementally build FreeBSD binaries only for plugins whose upstream version is
-# new (or that lack a FreeBSD build), and refresh manifest.json.
+# Incrementally build FreeBSD binaries for plugins whose upstream version is new,
+# or that are missing a FreeBSD build for an arch, and refresh manifest.json.
 #
 #   Usage: ./scripts/build-catalog.sh <asset-base-url> [existing-manifest]
 #
@@ -11,10 +11,10 @@
 #
 #   Environment:
 #     GO         go binary            (default: go)
-#     ARCHES     GOARCH list          (default: amd64)
+#     ARCHES     GOARCH list          (default: amd64; e.g. "amd64 arm64")
 #     UPSTREAM   upstream catalog URL (default: Silo-Server/silo-plugins main)
 #     ALLOWLIST  optional file of plugin IDs to consider (one per line)
-#     FORCE=1    rebuild every plugin, not only changed ones
+#     FORCE=1    rebuild every arch, not only the missing ones
 #
 #   Outputs (under <repo>):
 #     manifest.json   rewritten only when something was built
@@ -42,21 +42,10 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT INT TERM
 mkdir -p "$tmp/upd"
 
-# Prints "yes" when the existing catalog already ships this plugin version with
-# a FreeBSD binary for arch.
-have() { # id version arch
-	jq -r --arg id "$1" --arg v "$2" --arg a "$3" '
-		.plugins[]?
-		| select(.manifest.plugin_id == $id and .manifest.version == $v)
-		| .binaries["freebsd/" + $a]
-		| if . == null then empty else "yes" end
-	' "$existing" 2>/dev/null | head -1
-}
-
 echo "==> fetching upstream catalog"
 curl -fsSL "$UPSTREAM" -o "$tmp/upstream.json"
 count=$(jq '.plugins | length' "$tmp/upstream.json")
-echo "==> upstream lists $count plugins"
+echo "==> upstream lists $count plugins; arches: $ARCHES"
 
 i=0
 while [ "$i" -lt "$count" ]; do
@@ -75,17 +64,29 @@ while [ "$i" -lt "$count" ]; do
 		continue
 	fi
 
-	need=0
+	# Binaries already published for this exact version are reused; only the
+	# arches we are missing (all of them when the version changed) get built.
+	existing_bins=$(jq -c --arg id "$id" --arg v "$version" '
+		.plugins[]?
+		| select(.manifest.plugin_id == $id and .manifest.version == $v)
+		| .binaries // {}
+	' "$existing" 2>/dev/null | head -1)
+	[ -n "$existing_bins" ] || existing_bins='{}'
+
+	build_arches=""
 	for arch in $ARCHES; do
-		[ -n "$(have "$id" "$version" "$arch")" ] || need=1
+		if [ "${FORCE:-0}" = 1 ] || \
+			! printf '%s' "$existing_bins" | jq -e --arg a "$arch" 'has("freebsd/" + $a)' >/dev/null 2>&1; then
+			build_arches="$build_arches $arch"
+		fi
 	done
-	if [ "$need" = 0 ] && [ "${FORCE:-0}" != 1 ]; then
+	if [ -z "$build_arches" ]; then
 		echo "up-to-date $id $version"
 		continue
 	fi
 
 	slug=$(printf '%s' "$id" | tr '/.' '--')
-	echo "==> building $id $version"
+	echo "==> building $id $version:$build_arches"
 	src="$tmp/src-$slug"
 	if ! git clone --quiet --depth 1 --branch "v$version" "$repo.git" "$src" 2>/dev/null; then
 		if ! git clone --quiet --depth 1 "$repo.git" "$src" 2>/dev/null; then
@@ -94,6 +95,7 @@ while [ "$i" -lt "$count" ]; do
 		fi
 	fi
 
+	# Advertise every FreeBSD arch we target.
 	sp="$manifest"
 	for arch in $ARCHES; do
 		if ! printf '%s' "$sp" | jq -e --arg a "$arch" \
@@ -103,8 +105,9 @@ while [ "$i" -lt "$count" ]; do
 		fi
 	done
 
-	binaries='{}'
-	for arch in $ARCHES; do
+	binaries="$existing_bins"
+	built_here=0
+	for arch in $build_arches; do
 		out="$dist/${slug}-freebsd-${arch}"
 		if ( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" "$GO" build -trimpath -o "$out" . ); then
 			sum=$( (sha256sum "$out" 2>/dev/null || shasum -a 256 "$out") | awk '{print $1}')
@@ -114,6 +117,7 @@ while [ "$i" -lt "$count" ]; do
 				--arg c "$sum" \
 				'. + {($k): {"url":$u, "checksum":$c}}')
 			printf '%s %s %s\n' "$id" "$version" "$arch" >> "$built"
+			built_here=1
 			echo "  built $out"
 		else
 			echo "  !! build failed for $id on $arch"
@@ -121,8 +125,8 @@ while [ "$i" -lt "$count" ]; do
 	done
 	rm -rf "$src"
 
-	if [ "$binaries" = '{}' ]; then
-		echo "skip $id (no binaries built)"
+	if [ "$built_here" = 0 ]; then
+		echo "skip $id (nothing built)"
 		continue
 	fi
 
