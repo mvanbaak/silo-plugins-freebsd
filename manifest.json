@@ -1,0 +1,2491 @@
+{
+  "plugins": [
+    {
+      "manifest": {
+        "plugin_id": "silo.audiobook-metadata",
+        "version": "0.1.6",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "audiobook-metadata",
+            "display_name": "Audiobook Metadata",
+            "description": "Metadata provider for audiobook items. Searches Audnexus, Apple Books, and AudiobookCovers by default; Audible, Storytel, BookBeat, Audioteka, and AudiMeta can be enabled in the plugin settings.",
+            "metadata": {
+              "default_priority": {
+                "audiobook": 2
+              }
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "sources",
+            "title": "Search sources",
+            "description": "Sources queried when identifying an audiobook by title. Every source still resolves an ID it already knows (ASIN or Apple Books ID), so disabling one only removes it from title searches.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"audnexus\":{\"type\":\"boolean\"},\"itunes\":{\"type\":\"boolean\"},\"audiobookcovers\":{\"type\":\"boolean\"},\"audible\":{\"type\":\"boolean\"},\"storytel\":{\"type\":\"boolean\"},\"bookbeat\":{\"type\":\"boolean\"},\"audioteka\":{\"type\":\"boolean\"},\"audimeta\":{\"type\":\"boolean\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "audnexus",
+                  "label": "Audnexus",
+                  "description": "Public API over Audible's catalog. Returns narrators, series, and cover art; answers in well under a second.",
+                  "control": 5,
+                  "default_value": true
+                },
+                {
+                  "key": "itunes",
+                  "label": "Apple Books",
+                  "description": "Public iTunes Search API. Answers in about a second and has no narrator field.",
+                  "control": 5,
+                  "default_value": true
+                },
+                {
+                  "key": "audiobookcovers",
+                  "label": "AudiobookCovers.com",
+                  "description": "Cover art looked up by ASIN. Fills in a cover when the matched source has none.",
+                  "control": 5,
+                  "default_value": true
+                },
+                {
+                  "key": "audible",
+                  "label": "Audible (scraper)",
+                  "description": "Parses Audible search pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "storytel",
+                  "label": "Storytel (scraper)",
+                  "description": "Parses Storytel catalog pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "bookbeat",
+                  "label": "BookBeat (scraper)",
+                  "description": "Parses BookBeat catalog pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "audioteka",
+                  "label": "Audioteka (scraper)",
+                  "description": "Parses Audioteka catalog pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "audimeta",
+                  "label": "AudiMeta",
+                  "description": "The hosted API shut down in March 2026 and answers 403. Kept for self-hosted deployments.",
+                  "control": 5,
+                  "default_value": false
+                }
+              ],
+              "submit_label": "Save search sources"
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "Audiobook Metadata",
+          "summary": "Fetch audiobook metadata and artwork from multiple book and audiobook sources.",
+          "description_markdown": "Matches audiobook items against Audnexus, Apple Books, and AudiobookCovers by default, with Audible, Storytel, BookBeat, Audioteka, and AudiMeta available as optional sources. It combines those sources into metadata and artwork for Silo audiobook libraries.",
+          "setup_markdown": "Install the plugin and add **Audiobook Metadata** to the metadata provider chain for an audiobook library. Audnexus, Apple Books and AudiobookCovers are searched by default; the scrapers can be switched on in the plugin settings.",
+          "homepage_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-audiobook-metadata-freebsd-amd64",
+          "checksum": "e530cde2b183d5a6b11b470a701c03e6021cc2627b83f99bad66de317533fb2b"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.auth.ldap",
+        "version": "0.1.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "auth_provider.v1",
+            "id": "ldap",
+            "display_name": "LDAP",
+            "description": "Username and password sign-in against an LDAP directory.",
+            "metadata": {
+              "connection_test": true
+            },
+            "auth_modes": [
+              "password"
+            ]
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "assets",
+            "display_name": "LDAP assets",
+            "description": "Serves the login button icon."
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "display_name",
+            "title": "Login button label",
+            "description": "The directory's name, such as \"Company directory\". Silo shows it on the sign-in button and in labels such as \"Company directory password\".",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Button label",
+                  "control": 1,
+                  "placeholder": "Company directory",
+                  "default_value": "LDAP",
+                  "validation": {
+                    "max_length": 64
+                  }
+                }
+              ],
+              "submit_label": "Save label"
+            }
+          },
+          {
+            "key": "icon_url_path",
+            "title": "Login button icon",
+            "description": "Icon file served by this plugin under /assets/.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Icon",
+                  "control": 6,
+                  "default_value": "ldap.svg",
+                  "options": [
+                    {
+                      "value": "ldap.svg",
+                      "label": "Directory"
+                    }
+                  ]
+                }
+              ],
+              "submit_label": "Save icon"
+            }
+          },
+          {
+            "key": "directory",
+            "title": "Directory connection",
+            "description": "Where the directory is and how the plugin signs in to search it.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"preset\":{\"type\":\"string\"},\"urls\":{\"type\":\"string\"},\"start_tls\":{\"type\":\"boolean\"},\"ca_pem\":{\"type\":\"string\"},\"bind_dn\":{\"type\":\"string\"},\"bind_password\":{\"type\":\"string\",\"writeOnly\":true},\"connect_timeout_seconds\":{\"type\":\"number\"},\"request_timeout_seconds\":{\"type\":\"number\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "preset",
+                  "label": "Directory type",
+                  "description": "Fills in filters and attribute names for common directories. Every user and group setting you enter overrides it.",
+                  "control": 6,
+                  "default_value": "generic",
+                  "options": [
+                    {
+                      "value": "generic",
+                      "label": "Generic LDAP",
+                      "description": "RFC 4519 schema: uid, mail, displayName, entryUUID, memberOf. List admin groups as full DNs."
+                    },
+                    {
+                      "value": "lldap",
+                      "label": "lldap",
+                      "description": "Use ldaps://: lldap does not support StartTLS. Groups can be listed by name."
+                    },
+                    {
+                      "value": "authentik",
+                      "label": "authentik LDAP outpost",
+                      "description": "Use ldaps://: the outpost does not support StartTLS. The service account needs authentik's permission to search the full directory. Groups can be listed by name."
+                    },
+                    {
+                      "value": "active_directory",
+                      "label": "Active Directory / Samba",
+                      "description": "sAMAccountName and objectGUID. Re-checks catch disabled and expired accounts. memberOf lists direct memberships only; to include nested groups, read groups from a group search. List admin groups as full DNs."
+                    },
+                    {
+                      "value": "freeipa",
+                      "label": "FreeIPA",
+                      "description": "ipaUniqueID and nsAccountLock. Groups can be listed by name."
+                    },
+                    {
+                      "value": "openldap",
+                      "label": "OpenLDAP",
+                      "description": "Finds groups by search, with or without the memberOf overlay. List admin groups as full DNs."
+                    },
+                    {
+                      "value": "kanidm",
+                      "label": "Kanidm",
+                      "description": "LDAPS only. Kanidm's LDAP interface is read-only. Bind the service account as dn=token with an API token of a service account in idm_people_pii_read; without it, searches find no people. Sign-in checks each person's POSIX password, so turn on ldap_allow_unix_pw_bind for the domain and give each person a POSIX password. Re-checks catch expired accounts."
+                    },
+                    {
+                      "value": "glauth",
+                      "label": "GLAuth",
+                      "description": "Uses uidNumber as the unique ID. Never reuse a uidNumber after deleting a user: the next holder would take over the old Silo account. Users with accountStatus inactive count as disabled."
+                    }
+                  ]
+                },
+                {
+                  "key": "urls",
+                  "label": "Directory URLs",
+                  "description": "ldap:// or ldaps:// URLs, one per line. The plugin tries them in order and moves on only when a server cannot be reached.",
+                  "control": 2,
+                  "placeholder": "ldaps://ldap.example.com:636",
+                  "required": true,
+                  "rows": 2
+                },
+                {
+                  "key": "start_tls",
+                  "label": "Use StartTLS",
+                  "description": "Upgrade ldap:// connections to TLS before binding. Not for ldaps:// URLs.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "ca_pem",
+                  "label": "CA certificate (PEM)",
+                  "description": "Trust this certificate authority in addition to the system roots, for directories with a private CA. Certificate checks cannot be turned off.",
+                  "control": 2,
+                  "placeholder": "-----BEGIN CERTIFICATE-----",
+                  "rows": 4
+                },
+                {
+                  "key": "bind_dn",
+                  "label": "Service account DN",
+                  "description": "Account the plugin binds as to search for people and groups. Leave blank to search anonymously. Active Directory also accepts a user principal name.",
+                  "control": 1,
+                  "placeholder": "cn=silo,ou=services,dc=example,dc=com"
+                },
+                {
+                  "key": "bind_password",
+                  "label": "Service account password",
+                  "control": 3,
+                  "secret": true
+                },
+                {
+                  "key": "connect_timeout_seconds",
+                  "label": "Connect timeout (seconds)",
+                  "description": "Time to wait for each directory URL before trying the next. Silo allows a sign-in about 10 seconds in total, so with several URLs the plugin splits the time left across the ones not yet tried.",
+                  "control": 4,
+                  "default_value": 5,
+                  "validation": {
+                    "has_min": true,
+                    "min": 1,
+                    "has_max": true,
+                    "max": 120
+                  }
+                },
+                {
+                  "key": "request_timeout_seconds",
+                  "label": "Request timeout (seconds)",
+                  "description": "Time to wait for each directory answer. Silo allows a sign-in about 10 seconds in total, so larger values have no effect on sign-in.",
+                  "control": 4,
+                  "default_value": 10,
+                  "validation": {
+                    "has_min": true,
+                    "min": 1,
+                    "has_max": true,
+                    "max": 120
+                  }
+                }
+              ],
+              "submit_label": "Save connection"
+            }
+          },
+          {
+            "key": "users",
+            "title": "Users",
+            "description": "How the plugin finds a person and reads their details.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"base_dn\":{\"type\":\"string\"},\"filter\":{\"type\":\"string\"},\"username_attribute\":{\"type\":\"string\"},\"email_attribute\":{\"type\":\"string\"},\"display_name_attribute\":{\"type\":\"string\"},\"unique_id_attribute\":{\"type\":\"string\"},\"picture_url_attribute\":{\"type\":\"string\"},\"email_verified\":{\"type\":\"string\"},\"test_username\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "base_dn",
+                  "label": "User base DN",
+                  "description": "Subtree to search for people.",
+                  "control": 1,
+                  "placeholder": "ou=people,dc=example,dc=com",
+                  "required": true
+                },
+                {
+                  "key": "filter",
+                  "label": "User filter",
+                  "description": "LDAP filter that finds one person. {username} is replaced with the escaped sign-in name. Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "(&(objectClass=person)(uid={username}))"
+                },
+                {
+                  "key": "username_attribute",
+                  "label": "Username attribute",
+                  "description": "Suggested Silo username. Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "uid"
+                },
+                {
+                  "key": "email_attribute",
+                  "label": "Email attribute",
+                  "description": "Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "mail"
+                },
+                {
+                  "key": "display_name_attribute",
+                  "label": "Display name attribute",
+                  "description": "Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "displayName"
+                },
+                {
+                  "key": "unique_id_attribute",
+                  "label": "Unique ID attribute",
+                  "description": "Immutable ID that links the person to their Silo account, such as entryUUID, objectGUID, ipaUniqueID, or nsUniqueId. Changing it later disconnects existing accounts. Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "entryUUID"
+                },
+                {
+                  "key": "picture_url_attribute",
+                  "label": "Picture URL attribute",
+                  "description": "Optional attribute holding an http(s) URL of the person's picture, such as labeledURI.",
+                  "control": 1
+                },
+                {
+                  "key": "email_verified",
+                  "label": "Treat directory email as verified",
+                  "description": "Silo only matches existing accounts by email when the address is verified. Choose Verified only if people cannot change their own email in the directory.",
+                  "control": 6,
+                  "default_value": "unknown",
+                  "options": [
+                    {
+                      "value": "unknown",
+                      "label": "Not stated"
+                    },
+                    {
+                      "value": "verified",
+                      "label": "Verified"
+                    },
+                    {
+                      "value": "unverified",
+                      "label": "Not verified"
+                    }
+                  ]
+                },
+                {
+                  "key": "test_username",
+                  "label": "Test username",
+                  "description": "Optional. The connection test looks this person up and shows their groups and role. No password is used.",
+                  "control": 1
+                }
+              ],
+              "submit_label": "Save user settings"
+            }
+          },
+          {
+            "key": "groups",
+            "title": "Groups and access",
+            "description": "Who may sign in and who becomes an admin.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"source\":{\"type\":\"string\"},\"membership_attribute\":{\"type\":\"string\"},\"base_dn\":{\"type\":\"string\"},\"filter\":{\"type\":\"string\"},\"name_attribute\":{\"type\":\"string\"},\"allowed_groups\":{\"type\":\"string\"},\"admin_groups\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "source",
+                  "label": "Read groups from",
+                  "control": 6,
+                  "default_value": "default",
+                  "options": [
+                    {
+                      "value": "default",
+                      "label": "Directory type default"
+                    },
+                    {
+                      "value": "memberof",
+                      "label": "The person's memberOf attribute"
+                    },
+                    {
+                      "value": "search",
+                      "label": "A group search",
+                      "description": "Use this for nested Active Directory groups: the Active Directory group filter follows nesting."
+                    }
+                  ]
+                },
+                {
+                  "key": "membership_attribute",
+                  "label": "Membership attribute",
+                  "description": "Attribute on the person listing group DNs. Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "memberOf",
+                  "show_when": [
+                    {
+                      "field": "source",
+                      "equals": [
+                        "memberof",
+                        "default"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "base_dn",
+                  "label": "Group base DN",
+                  "description": "Subtree to search for groups. Leave blank to use the user base DN.",
+                  "control": 1,
+                  "placeholder": "ou=groups,dc=example,dc=com",
+                  "show_when": [
+                    {
+                      "field": "source",
+                      "equals": [
+                        "search",
+                        "default"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "filter",
+                  "label": "Group filter",
+                  "description": "{dn} is replaced with the person's escaped DN and {username} with their escaped username. Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "(&(objectClass=groupOfNames)(member={dn}))",
+                  "show_when": [
+                    {
+                      "field": "source",
+                      "equals": [
+                        "search",
+                        "default"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "name_attribute",
+                  "label": "Group name attribute",
+                  "description": "Leave blank to use the directory type's default.",
+                  "control": 1,
+                  "placeholder": "cn",
+                  "show_when": [
+                    {
+                      "field": "source",
+                      "equals": [
+                        "search",
+                        "default"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "allowed_groups",
+                  "label": "Allowed groups",
+                  "description": "One group per line, as a name (silo-users) or a full DN. Only members, and members of an admin group, may sign in. A name matches every group of that name, so on Active Directory and OpenLDAP prefer full DNs. Leave empty to let everyone the user filter finds sign in.",
+                  "control": 2,
+                  "rows": 3
+                },
+                {
+                  "key": "admin_groups",
+                  "label": "Admin groups",
+                  "description": "One group per line, as a full DN (cn=silo-admins,ou=groups,dc=example,dc=com). Names are accepted only for lldap, authentik, FreeIPA, Kanidm, and GLAuth, where group names are unique across the directory. Members become Silo admins and everyone else becomes a regular user, updated at each sign-in and re-check. Leave empty to manage roles in Silo.",
+                  "control": 2,
+                  "rows": 2
+                }
+              ],
+              "submit_label": "Save group settings"
+            }
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          }
+        ],
+        "category": "Authentication",
+        "presentation": {
+          "display_name": "LDAP Sign-in",
+          "summary": "Let people sign in to Silo with their LDAP or Active Directory password.",
+          "description_markdown": "Checks usernames and passwords against an LDAP directory such as lldap, the authentik LDAP outpost, Active Directory, Samba, FreeIPA, OpenLDAP, Kanidm, or GLAuth. Group rules decide who may sign in and who becomes a Silo admin. Silo re-checks signed-in accounts against the directory, every 12 hours by default (configurable in Silo). When someone is deleted, disabled, or removed from the allowed groups in the directory, the next re-check ends their Silo sessions and updates their role.",
+          "setup_markdown": "1. Pick the **directory type** and enter the directory URL, the service account, and the user base DN.\n2. Optionally list **allowed groups** and **admin groups**.\n3. Run the connection test, with a test username, before enabling sign-in.\n\nUse `ldaps://` or StartTLS: the plugin sends each password to the directory to verify it.",
+          "homepage_url": "https://github.com/Silo-Server/silo-plugin-auth-ldap",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-auth-ldap",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-auth-ldap/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-auth-ldap/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-or-later"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-auth-ldap",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-auth-ldap-freebsd-amd64",
+          "checksum": "afa99ce90da981de1fbfc0494d03274e1d8df0dace6661d5729ca1229f694fd1"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.auth.oidc",
+        "version": "0.1.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "auth_provider.v1",
+            "id": "oidc",
+            "display_name": "Single sign-on",
+            "description": "Sign in with an OpenID Connect provider.",
+            "metadata": {
+              "connection_test": true
+            },
+            "auth_modes": [
+              "oauth2"
+            ]
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "assets",
+            "display_name": "Sign-in button assets",
+            "description": "Serves the login button icon."
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "display_name",
+            "title": "Button label",
+            "description": "The provider's name, such as \"authentik\" or \"Company SSO\". Silo shows it on the login button and in sentences such as \"Connect authentik\", so leave out \"Sign in with\".",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"maxLength\":80}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Button label",
+                  "description": "Shown on the login page and in the apps.",
+                  "control": 1,
+                  "placeholder": "Single sign-on",
+                  "default_value": "Single sign-on",
+                  "validation": {
+                    "max_length": 80
+                  }
+                }
+              ],
+              "submit_label": "Save label"
+            }
+          },
+          {
+            "key": "icon_url_path",
+            "title": "Button icon",
+            "description": "Icon on the login button, served by this plugin under /assets/. The Apple apps do not draw SVG icons, so sso.png is the one every Silo app shows.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"enum\":[\"sso.png\",\"sso.svg\"],\"default\":\"sso.png\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Icon file",
+                  "description": "The login button uses sso.png until this setting is saved.",
+                  "control": 6,
+                  "default_value": "sso.png",
+                  "options": [
+                    {
+                      "value": "sso.png",
+                      "label": "Key icon, PNG (all apps)"
+                    },
+                    {
+                      "value": "sso.svg",
+                      "label": "Key icon, SVG (not shown in the Apple apps)"
+                    }
+                  ]
+                }
+              ],
+              "submit_label": "Save icon"
+            }
+          },
+          {
+            "key": "connection",
+            "title": "Provider connection",
+            "description": "Where the OpenID Connect provider is and how Silo authenticates to it. The redirect URI to register at the provider is shown on the Sign-in settings page.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"issuer_url\":{\"type\":\"string\"},\"client_id\":{\"type\":\"string\"},\"client_secret\":{\"type\":\"string\",\"writeOnly\":true},\"token_endpoint_auth_method\":{\"type\":\"string\",\"enum\":[\"client_secret_basic\",\"client_secret_post\"]},\"scopes\":{\"type\":\"string\"},\"request_groups_scope\":{\"type\":\"boolean\"},\"request_offline_access\":{\"type\":\"boolean\"},\"refresh_token_lifetime\":{\"type\":\"string\",\"maxLength\":16,\"pattern\":\"^\\\\s*(0|([0-9]{1,4})d|(?:([0-9]{1,6})h)?(?:([0-9]{1,7})m)?)\\\\s*$\"},\"refresh_token_max_lifetime\":{\"type\":\"string\",\"maxLength\":16,\"pattern\":\"^\\\\s*(0|([0-9]{1,4})d|(?:([0-9]{1,6})h)?(?:([0-9]{1,7})m)?)\\\\s*$\"},\"prompt\":{\"type\":\"string\",\"enum\":[\"\",\"login\",\"select_account\",\"consent\"]},\"provider_logout\":{\"type\":\"boolean\"},\"ca_pem\":{\"type\":\"string\"},\"allow_hs256\":{\"type\":\"boolean\"}},\"additionalProperties\":false}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "issuer_url",
+                  "label": "Issuer URL",
+                  "description": "The provider's issuer, exactly as its discovery document reports it, including any trailing slash (authentik has one). Must use https.",
+                  "control": 1,
+                  "placeholder": "https://auth.example.com/application/o/silo/",
+                  "required": true
+                },
+                {
+                  "key": "client_id",
+                  "label": "Client ID",
+                  "description": "The ID of the client you created for Silo at the provider.",
+                  "control": 1,
+                  "required": true
+                },
+                {
+                  "key": "client_secret",
+                  "label": "Client secret",
+                  "description": "Stored encrypted. Register Silo as a confidential client.",
+                  "control": 3,
+                  "secret": true
+                },
+                {
+                  "key": "token_endpoint_auth_method",
+                  "label": "Client authentication",
+                  "description": "How Silo sends the client secret to the token endpoint.",
+                  "control": 6,
+                  "default_value": "client_secret_basic",
+                  "options": [
+                    {
+                      "value": "client_secret_basic",
+                      "label": "HTTP Basic (client_secret_basic)"
+                    },
+                    {
+                      "value": "client_secret_post",
+                      "label": "Form body (client_secret_post)"
+                    }
+                  ]
+                },
+                {
+                  "key": "scopes",
+                  "label": "Scopes",
+                  "description": "Space-separated. openid is always sent. Zitadel roles need urn:zitadel:iam:org:projects:roles.",
+                  "control": 1,
+                  "placeholder": "openid profile email",
+                  "default_value": "openid profile email"
+                },
+                {
+                  "key": "request_groups_scope",
+                  "label": "Request the groups scope",
+                  "description": "Adds the groups scope. Authelia, Pocket ID, Kanidm and Tinyauth need it for group rules; authentik and Keycloak send groups without it.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "request_offline_access",
+                  "label": "Request offline access",
+                  "description": "Adds offline_access. Silo re-checks accounts at the provider only when the provider grants it; otherwise sessions get an absolute age limit. The provider's refresh-token lifetime must be longer than Silo's re-check interval plus about an hour (Authelia's default of 90 minutes is too short). Leave it off for Kanidm, which refuses scopes missing from its scope map.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "refresh_token_lifetime",
+                  "label": "Refresh token lifetime",
+                  "description": "How long one of the provider's refresh tokens lasts, counted from when it was issued or last renewed, such as 90m, 12h or 30d. If several limits apply, enter the shortest. Needed unless the provider reports it: Authelia never does, and Keycloak does only when Offline Session Max Limited is on; otherwise enter the realm's Offline Session Idle (30d by default). Providers refuse expired and revoked tokens with the same error. Within this lifetime, Silo treats a refusal as a revocation and signs the person out, so a value longer than the real one signs people out when their tokens merely expire. If you do not know it, leave it blank: refusals then sign no one out, and sessions keep an absolute age limit.",
+                  "control": 1,
+                  "placeholder": "30d",
+                  "validation": {
+                    "pattern": "^\\s*(0|([0-9]{1,4})d|(?:([0-9]{1,6})h)?(?:([0-9]{1,7})m)?)\\s*$",
+                    "max_length": 16
+                  }
+                },
+                {
+                  "key": "refresh_token_max_lifetime",
+                  "label": "Refresh token absolute lifetime",
+                  "description": "The provider's fixed cap on refresh tokens, counted from sign-in however often they are renewed, such as Zitadel's Refresh Token Expiration (90d by default). Silo treats a refusal at or after this age as expiry, not a revocation. Without it, such a cap signs active people out of Silo when it ends, whenever Refresh token lifetime is set. Leave it blank if the provider has no such cap.",
+                  "control": 1,
+                  "placeholder": "90d",
+                  "validation": {
+                    "pattern": "^\\s*(0|([0-9]{1,4})d|(?:([0-9]{1,6})h)?(?:([0-9]{1,7})m)?)\\s*$",
+                    "max_length": 16
+                  }
+                },
+                {
+                  "key": "prompt",
+                  "label": "Prompt",
+                  "description": "Asks the provider to show its login or account picker every time.",
+                  "control": 6,
+                  "default_value": "",
+                  "options": [
+                    {
+                      "label": "Provider default"
+                    },
+                    {
+                      "value": "login",
+                      "label": "Always ask for credentials (login)"
+                    },
+                    {
+                      "value": "select_account",
+                      "label": "Account picker (select_account)"
+                    },
+                    {
+                      "value": "consent",
+                      "label": "Always ask for consent (consent)"
+                    }
+                  ]
+                },
+                {
+                  "key": "provider_logout",
+                  "label": "Sign out at the provider",
+                  "description": "On web sign-out, also end the provider session when it has an end-session endpoint. Register Silo's sign-in page as a post-logout redirect URI at the provider (Keycloak: Valid post logout redirect URIs; Zitadel: Post Logout URIs). Authelia, Kanidm and Tinyauth have no end-session endpoint.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "ca_pem",
+                  "label": "Custom CA certificate (PEM)",
+                  "description": "Trust this CA in addition to the system roots, for a provider with a private certificate. There is no option to skip verification.",
+                  "control": 2,
+                  "placeholder": "-----BEGIN CERTIFICATE-----",
+                  "multiline": true,
+                  "rows": 6
+                },
+                {
+                  "key": "allow_hs256",
+                  "label": "Allow HS256 ID tokens",
+                  "description": "Accept ID tokens signed with the client secret. Only for providers without a signing key, such as an authentik provider with no signing key set. Prefer configuring a signing key.",
+                  "control": 5,
+                  "default_value": false
+                }
+              ],
+              "submit_label": "Save connection",
+              "sections": [
+                {
+                  "key": "client",
+                  "title": "Client",
+                  "field_keys": [
+                    "issuer_url",
+                    "client_id",
+                    "client_secret",
+                    "token_endpoint_auth_method"
+                  ]
+                },
+                {
+                  "key": "request",
+                  "title": "Sign-in request",
+                  "field_keys": [
+                    "scopes",
+                    "request_groups_scope",
+                    "request_offline_access",
+                    "refresh_token_lifetime",
+                    "refresh_token_max_lifetime",
+                    "prompt",
+                    "provider_logout"
+                  ]
+                },
+                {
+                  "key": "advanced",
+                  "title": "Advanced",
+                  "collapsible": true,
+                  "collapsed_default": true,
+                  "field_keys": [
+                    "ca_pem",
+                    "allow_hs256"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "claims",
+            "title": "Claim mapping",
+            "description": "Which ID token or userinfo claims hold each detail. Silo merges the userinfo claims over the ID token claims.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"username\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"groups\":{\"type\":\"string\"},\"picture\":{\"type\":\"string\"},\"subject\":{\"type\":\"string\",\"enum\":[\"auto\",\"standard\",\"entra\"]}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "username",
+                  "label": "Username claim",
+                  "description": "Base for a new Silo username.",
+                  "control": 1,
+                  "placeholder": "preferred_username",
+                  "default_value": "preferred_username"
+                },
+                {
+                  "key": "email",
+                  "label": "Email claim",
+                  "control": 1,
+                  "placeholder": "email",
+                  "default_value": "email"
+                },
+                {
+                  "key": "display_name",
+                  "label": "Display name claim",
+                  "description": "Falls back to given_name and family_name.",
+                  "control": 1,
+                  "placeholder": "name",
+                  "default_value": "name"
+                },
+                {
+                  "key": "groups",
+                  "label": "Groups claim",
+                  "description": "A list of names, or an object whose keys are the groups. Zitadel: urn:zitadel:iam:org:project:roles. Dots walk into nested claims, as in realm_access.roles.",
+                  "control": 1,
+                  "placeholder": "groups",
+                  "default_value": "groups"
+                },
+                {
+                  "key": "picture",
+                  "label": "Picture claim",
+                  "control": 1,
+                  "placeholder": "picture",
+                  "default_value": "picture"
+                },
+                {
+                  "key": "subject",
+                  "label": "Account key",
+                  "description": "What links a provider account to a Silo account. Changing it after people have signed in disconnects their accounts.",
+                  "control": 6,
+                  "default_value": "auto",
+                  "options": [
+                    {
+                      "value": "auto",
+                      "label": "Automatic",
+                      "description": "Tenant and object ID for Microsoft Entra ID, issuer and subject otherwise."
+                    },
+                    {
+                      "value": "standard",
+                      "label": "Issuer and subject (iss + sub)"
+                    },
+                    {
+                      "value": "entra",
+                      "label": "Entra tenant and object ID (tid + oid)"
+                    }
+                  ]
+                }
+              ],
+              "submit_label": "Save claim mapping"
+            }
+          },
+          {
+            "key": "access",
+            "title": "Access rules",
+            "description": "Group rules the plugin applies to the provider's groups at every sign-in and account re-check.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"allowed_groups\":{\"type\":\"string\"},\"admin_groups\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "allowed_groups",
+                  "label": "Allowed groups",
+                  "description": "One per line. People in none of these groups are refused. Leave empty to allow everyone the provider signs in. Keycloak paths match with or without the leading /, and a Kanidm name matches its name@domain form.",
+                  "control": 2,
+                  "placeholder": "silo-users",
+                  "multiline": true,
+                  "rows": 3
+                },
+                {
+                  "key": "admin_groups",
+                  "label": "Admin groups",
+                  "description": "One per line. Members become Silo admins and everyone else becomes a regular user, at every sign-in and re-check. Leave empty to manage roles in Silo.",
+                  "control": 2,
+                  "placeholder": "silo-admins",
+                  "multiline": true,
+                  "rows": 3
+                }
+              ],
+              "submit_label": "Save access rules"
+            }
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          }
+        ],
+        "category": "Sign-in",
+        "presentation": {
+          "display_name": "OpenID Connect Sign-in",
+          "summary": "Sign in to Silo with an OpenID Connect provider such as Authelia, authentik, Pocket ID, Keycloak, Kanidm, Zitadel or Tinyauth.",
+          "description_markdown": "Adds a \"Sign in with ...\" button that sends people to your OpenID Connect provider. The plugin validates the provider's ID token, reads the person's details and groups, and applies the allowed-groups and admin-groups rules. Silo creates or links the account and manages sessions.",
+          "setup_markdown": "1. At your provider, create a confidential client for Silo and register the redirect URI shown on Silo's Sign-in settings page.\n2. Enter the issuer URL, client ID and client secret under **Provider connection**, then run the connection test.\n3. Set the allowed and admin groups under **Access rules** if your provider sends groups.\n4. To let Silo re-check accounts at the provider, turn on **Request offline access** and make the provider's refresh-token lifetime longer than Silo's re-check interval plus about an hour. Unless the provider reports that lifetime, enter it as **Refresh token lifetime** so Silo can tell a revoked token from an expired one. Authelia never reports it. Keycloak reports it for offline tokens only when Offline Session Max Limited is on; otherwise enter the realm's Offline Session Idle (30d by default). If the provider also caps refresh tokens at a fixed age from sign-in, as Zitadel's Refresh Token Expiration does, enter that cap as **Refresh token absolute lifetime**.\n5. If you turn on **Sign out at the provider**, register Silo's sign-in page as a post-logout redirect URI at the provider.",
+          "homepage_url": "https://github.com/Silo-Server/silo-plugin-auth-oidc",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-auth-oidc",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-auth-oidc/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-auth-oidc/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-or-later"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-auth-oidc",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-auth-oidc-freebsd-amd64",
+          "checksum": "1629e8690d2f8cb734f60315e4f6f96c9324812f29e59b01fb822abb7072664c"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.autoscan.arr",
+        "version": "0.1.2",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "scan_source.v1",
+            "id": "arr",
+            "display_name": "Sonarr / Radarr",
+            "description": "Triggers Silo rescans from Sonarr/Radarr import and rename history."
+          }
+        ],
+        "presentation": {
+          "display_name": "Sonarr & Radarr Autoscan",
+          "summary": "Detect imports and renames in Sonarr or Radarr and queue targeted Silo scans.",
+          "description_markdown": "Polls recent Sonarr and Radarr history for completed imports and file renames. It returns the affected paths to Silo so the host can apply path rewrites, deduplicate work, and scan only the relevant library locations.",
+          "setup_markdown": "Install the plugin, then create an Autoscan source in Silo using a Sonarr or Radarr connection. Configure any path rewrites on the Silo source. The plugin stores no credentials and has no separate global configuration.",
+          "homepage_url": "https://github.com/Silo-Server/silo-plugin-autoscan-arr",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-autoscan-arr",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-autoscan-arr/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-autoscan-arr/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "NOASSERTION"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-autoscan-arr",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-autoscan-arr-freebsd-amd64",
+          "checksum": "ef9fa13815ab066ae0002c16579bcb475cd80fee7a39e840539a5b8b89b47070"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.ebook-metadata",
+        "version": "0.1.1",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "ebook-metadata",
+            "display_name": "Ebook Metadata",
+            "description": "Metadata provider for ebook items. Wraps OpenLibrary, Google Books, ISBNdb, Hardcover, Goodreads, Amazon, Anna's Archive, Project Gutenberg, BookBrainz, FantasticFiction, ISFDB, LibraryThing, Internet Archive, WorldCat, and Douban.",
+            "metadata": {
+              "default_priority": {
+                "ebook": 2
+              }
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "enabled_sources",
+            "title": "Enabled sources",
+            "description": "Comma-separated source IDs to search. Empty uses the default source set.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Source IDs",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "google_books_api_key",
+            "title": "Google Books API key",
+            "description": "Optional API key for Google Books.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": 3
+                }
+              ]
+            }
+          },
+          {
+            "key": "isbndb_api_key",
+            "title": "ISBNdb API key",
+            "description": "Optional API key for ISBNdb.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": 3
+                }
+              ]
+            }
+          },
+          {
+            "key": "hardcover_api_key",
+            "title": "Hardcover API key",
+            "description": "Optional API key for Hardcover.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": 3
+                }
+              ]
+            }
+          },
+          {
+            "key": "default_region",
+            "title": "Default region",
+            "description": "Optional region hint used by sources that support regional catalogs.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Region code",
+                  "control": 1
+                }
+              ]
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "Ebook Metadata",
+          "summary": "Enrich ebook libraries with book metadata from public and credentialed sources.",
+          "description_markdown": "Searches OpenLibrary, Google Books, ISBNdb, Hardcover, Goodreads, Amazon, Anna's Archive, Project Gutenberg, BookBrainz, FantasticFiction, ISFDB, LibraryThing, Internet Archive, WorldCat, and Douban. Results include book identity, descriptions, contributors, and artwork.",
+          "setup_markdown": "Install the plugin and add **Ebook Metadata** to an ebook library's metadata provider chain. Optionally limit `enabled_sources`, set a regional hint, or add API keys for Google Books, ISBNdb, and Hardcover. Sources that require a key are skipped until one is configured.",
+          "homepage_url": "https://github.com/Silo-Server/silo-plugin-metadata-ebook",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-ebook",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-ebook/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-ebook/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "NOASSERTION"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-ebook",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-ebook-metadata-freebsd-amd64",
+          "checksum": "011077848150b1e03bfe30277961f6bb58b0cce690c8b32b80fe274c26361649"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.manga-metadata",
+        "version": "0.1.1",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "manga-metadata",
+            "display_name": "Manga Metadata (MangaBaka)",
+            "description": "Rich manga metadata from MangaBaka — covers, synopsis, authors, genres, publication status, publisher, and cross-provider IDs — aggregating AniList, MyAnimeList, MangaUpdates, Kitsu, Anime-Planet, and Shikimori, with a MangaDex deep fallback and AniList banner backdrops. Optional offline mode downloads MangaBaka's database for fast, rate-limit-free matching on large libraries.",
+            "metadata": {
+              "default_priority": {
+                "manga": 1
+              }
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "enabled_sources",
+            "title": "Enabled sources",
+            "description": "Comma-separated source IDs to search (mangabaka, mangadex). Empty uses the default set.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Source IDs",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "enable_local_dump",
+            "title": "Use local MangaBaka dump",
+            "description": "Download MangaBaka's database (~335MB, ~1.5GB on disk) for offline, rate-limit-free matching. Recommended for large libraries. Default off.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable local dump",
+                  "control": 5
+                }
+              ]
+            }
+          },
+          {
+            "key": "dump_path",
+            "title": "Dump storage path",
+            "description": "Override where the dump is stored. Default: OS cache dir. Point at a roomy volume if needed.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Path",
+                  "control": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "dump_refresh_hours",
+            "title": "Dump refresh interval (hours)",
+            "description": "How often to re-download the dump. Default 168 (weekly).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Hours",
+                  "control": 4,
+                  "default_value": 168
+                }
+              ]
+            }
+          },
+          {
+            "key": "enable_anilist_banners",
+            "title": "AniList banner backdrops",
+            "description": "MangaBaka has no banner art. When on, fetch a hero backdrop from AniList by id for matched series. Default on.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable banners",
+                  "control": 5,
+                  "default_value": true
+                }
+              ]
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "Manga Metadata",
+          "summary": "Match manga and add rich metadata, covers, contributors, and publication details.",
+          "description_markdown": "Uses MangaBaka as the primary source, with MangaDex as a deep fallback and optional AniList banner artwork. It can also keep a local MangaBaka database for fast, rate-limit-free matching on large libraries.",
+          "setup_markdown": "Install the plugin and add **Manga Metadata** to a manga library's provider chain. The defaults use live sources. For large libraries, enable the local MangaBaka dump and ensure the configured storage path has about 1.5 GB available; the initial download is roughly 335 MB.",
+          "homepage_url": "https://github.com/Silo-Server/silo-plugin-metadata-manga",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-manga",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-manga/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-manga/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-manga",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-manga-metadata-freebsd-amd64",
+          "checksum": "5a6d001e315f8b1f626dbc60092c45567dff44451925cd6247ff774fc35796e5"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.mdblist",
+        "version": "0.5.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "mdblist",
+            "display_name": "MDBList",
+            "description": "IMDb, TMDB and Rotten Tomatoes ratings, MDBList's own score, age rating, certification, and missing basics. Enrichment only — never identifies an item.",
+            "metadata": {
+              "bulk_lookup_limit": 100,
+              "default_priority": {
+                "movie": 8,
+                "series": 8
+              },
+              "lookup_provider_ids": [
+                "imdb",
+                "tmdb"
+              ],
+              "rating_sources": [
+                {
+                  "id": "rt_critic",
+                  "label": "Rotten Tomatoes critics",
+                  "name": "RT",
+                  "percent": true,
+                  "scale": 100
+                },
+                {
+                  "id": "rt_audience",
+                  "label": "Rotten Tomatoes audience",
+                  "name": "RT Audience",
+                  "percent": true,
+                  "scale": 100
+                },
+                {
+                  "id": "mdblist",
+                  "label": "MDBList score",
+                  "name": "MDBList",
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "account",
+            "title": "MDBList Account",
+            "description": "MDBList API key. Without it the provider stays idle and contributes nothing.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"api_key\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "api_key",
+                  "label": "API Key",
+                  "description": "Free API key from your MDBList preferences page.",
+                  "control": 3,
+                  "secret": true
+                }
+              ],
+              "submit_label": "Save MDBList account"
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "MDBList Ratings",
+          "summary": "IMDb, TMDB and Rotten Tomatoes ratings, MDBList's own score, age ratings, and missing basics from MDBList.",
+          "description_markdown": "Fills in what other metadata providers leave empty: IMDb and TMDB ratings, the Rotten Tomatoes critic and audience scores, MDBList's own score, the Common Sense age rating, the release certification, and basics such as year, release date, runtime, language, genres, and show status.\n\nSilo shows the Rotten Tomatoes scores and the MDBList score only after an administrator turns them on under Settings > Library & Metadata > Ratings.\n\nThis provider never identifies an item. It looks up titles that another provider has already matched, using the IMDb or TMDB ID that provider resolved, so it must sit *below* a primary metadata provider such as TMDB in a library's provider chain.",
+          "setup_markdown": "Create a free API key in your MDBList preferences, add it below, then add **MDBList** to a library's metadata provider chain at a lower priority than your primary provider.\n\nThe free tier allows 1000 requests per day. Lookups that arrive together are sent as one batch request, and Silo's hourly Bulk Metadata Enrichment task sends up to 100 titles at a time. When the quota runs out the plugin pauses until it resets and tells Silo so, and Silo looks those titles up again later; it never fails a metadata refresh.",
+          "homepage_url": "https://mdblist.com",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-mdblist",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-mdblist/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-mdblist/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-mdblist",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-mdblist-freebsd-amd64",
+          "checksum": "0818e88ed3f68453f93a9f613b2a80ae588ede38451dbe349aac26e9275c641a"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.requests.arr",
+        "version": "0.1.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "request_router.v1",
+            "id": "arr",
+            "display_name": "Sonarr / Radarr",
+            "description": "Fulfills movie/series requests against multi-instance Sonarr/Radarr.",
+            "config_schema": [
+              {
+                "key": "connection",
+                "title": "Connection",
+                "json_schema": "{\"type\":\"object\",\"properties\":{\"service_kind\":{\"type\":\"string\"},\"root_folder\":{\"type\":\"string\"},\"quality_profile_id\":{\"type\":\"integer\"},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}},\"is_default\":{\"type\":\"boolean\"},\"is_4k\":{\"type\":\"boolean\"},\"is_default_4k\":{\"type\":\"boolean\"},\"search_on_add\":{\"type\":\"boolean\"},\"minimum_availability\":{\"type\":\"string\"},\"series_type\":{\"type\":\"string\"},\"season_folder\":{\"type\":\"boolean\"},\"anime_enabled\":{\"type\":\"boolean\"},\"anime_root_folder\":{\"type\":\"string\"},\"anime_quality_profile_id\":{\"type\":\"integer\"},\"anime_tags\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}}}}",
+                "admin_form": {
+                  "fields": [
+                    {
+                      "key": "service_kind",
+                      "label": "Service",
+                      "control": 6,
+                      "required": true,
+                      "options": [
+                        {
+                          "value": "radarr",
+                          "label": "Radarr (movies)"
+                        },
+                        {
+                          "value": "sonarr",
+                          "label": "Sonarr (series)"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "root_folder",
+                      "label": "Root folder",
+                      "control": 6,
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "quality_profile_id",
+                      "label": "Quality profile",
+                      "control": 6,
+                      "required": true,
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "tags",
+                      "label": "Tags",
+                      "control": 7,
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "is_default",
+                      "label": "Default (HD/1080p)",
+                      "control": 5,
+                      "exclusive_group_field": "service_kind"
+                    },
+                    {
+                      "key": "is_4k",
+                      "label": "4K instance",
+                      "control": 5
+                    },
+                    {
+                      "key": "is_default_4k",
+                      "label": "Default 4K (2160p)",
+                      "control": 5,
+                      "show_when": [
+                        {
+                          "field": "is_4k",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ],
+                      "exclusive_group_field": "service_kind"
+                    },
+                    {
+                      "key": "search_on_add",
+                      "label": "Search on add",
+                      "control": 5,
+                      "default_value": true
+                    },
+                    {
+                      "key": "minimum_availability",
+                      "label": "Minimum availability",
+                      "control": 6,
+                      "default_value": "released",
+                      "options": [
+                        {
+                          "value": "announced",
+                          "label": "Announced"
+                        },
+                        {
+                          "value": "inCinemas",
+                          "label": "In cinemas"
+                        },
+                        {
+                          "value": "released",
+                          "label": "Released"
+                        }
+                      ],
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "radarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "series_type",
+                      "label": "Series type",
+                      "control": 6,
+                      "default_value": "standard",
+                      "options": [
+                        {
+                          "value": "standard",
+                          "label": "Standard"
+                        },
+                        {
+                          "value": "daily",
+                          "label": "Daily"
+                        },
+                        {
+                          "value": "anime",
+                          "label": "Anime"
+                        }
+                      ],
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "sonarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "season_folder",
+                      "label": "Season folder",
+                      "control": 5,
+                      "default_value": true,
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "sonarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "anime_enabled",
+                      "label": "Enable anime overrides",
+                      "control": 5
+                    },
+                    {
+                      "key": "anime_root_folder",
+                      "label": "Anime root folder",
+                      "control": 6,
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "anime_enabled",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "anime_quality_profile_id",
+                      "label": "Anime quality profile",
+                      "control": 6,
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "anime_enabled",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "anime_tags",
+                      "label": "Anime tags",
+                      "control": 7,
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "anime_enabled",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "submit_label": "Save connection",
+                  "sections": [
+                    {
+                      "key": "library",
+                      "title": "Library",
+                      "collapsible": true,
+                      "collapsed_default": true,
+                      "field_keys": [
+                        "service_kind",
+                        "root_folder",
+                        "quality_profile_id",
+                        "tags",
+                        "is_default",
+                        "is_4k",
+                        "is_default_4k",
+                        "search_on_add",
+                        "minimum_availability",
+                        "series_type",
+                        "season_folder"
+                      ]
+                    },
+                    {
+                      "key": "anime",
+                      "title": "Anime overrides",
+                      "field_keys": [
+                        "anime_enabled",
+                        "anime_root_folder",
+                        "anime_quality_profile_id",
+                        "anime_tags"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugins-requests-arr",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-requests-arr-freebsd-amd64",
+          "checksum": "e86d7d0beebe6b8fa94ec33d0718cd76e4e66c06cfb4134029eb8c0edd9976bd"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.requests.seerr",
+        "version": "0.1.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "request_router.v1",
+            "id": "seerr",
+            "display_name": "Seerr",
+            "description": "Fulfill content requests through a Seerr (Overseerr/Jellyseerr) instance.",
+            "config_schema": [
+              {
+                "key": "connection",
+                "title": "Seerr",
+                "json_schema": "{\"type\":\"object\",\"properties\":{\"supports_4k\":{\"type\":\"boolean\"},\"requester_mode\":{\"type\":\"string\"},\"auto_approve\":{\"type\":\"boolean\"},\"require_mapped_user\":{\"type\":\"boolean\"}}}",
+                "admin_form": {
+                  "fields": [
+                    {
+                      "key": "supports_4k",
+                      "label": "This Seerr handles 4K requests",
+                      "description": "Enable only if the Seerr instance has a 4K Sonarr/Radarr configured. When off, 2160p requests are not sent to this connection.",
+                      "control": 5,
+                      "default_value": false
+                    },
+                    {
+                      "key": "requester_mode",
+                      "label": "Attribute requests to",
+                      "description": "Admin user: all requests come from the API-key owner (auto-approved). Map to Silo users: attribute each request to the Seerr user matching the requester's email (created if missing).",
+                      "control": 6,
+                      "default_value": "admin",
+                      "options": [
+                        {
+                          "value": "admin",
+                          "label": "Admin user (API key owner)"
+                        },
+                        {
+                          "value": "mapped",
+                          "label": "Map to Silo users"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "auto_approve",
+                      "label": "Auto-approve requests",
+                      "description": "Mapped users' requests are auto-approved. Off: they land in Seerr's per-user approval queue.",
+                      "control": 5,
+                      "default_value": true,
+                      "show_when": [
+                        {
+                          "field": "requester_mode",
+                          "equals": [
+                            "mapped"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "require_mapped_user",
+                      "label": "Fail the request if the user can't be mapped",
+                      "description": "On: a request whose Silo user can't be matched/created on Seerr fails instead of being submitted under the admin.",
+                      "control": 5,
+                      "default_value": false,
+                      "show_when": [
+                        {
+                          "field": "requester_mode",
+                          "equals": [
+                            "mapped"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "submit_label": "Save connection"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugins-requests-seerr",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-requests-seerr-freebsd-amd64",
+          "checksum": "74e6262695779e42be2b1faa0b72d41813802f02c377bdc8bec2b75c671f9736"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.sportarr",
+        "version": "1.0.3",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "sportarr",
+            "display_name": "Sportarr",
+            "description": "Sportarr — metadata for sports leagues as TV shows.",
+            "metadata": {
+              "default_enabled": false,
+              "default_priority": {
+                "episode": 50,
+                "season": 50,
+                "series": 50
+              }
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "sportarr",
+            "title": "Sportarr",
+            "description": "Configure Sportarr API access",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"base_url\":{\"type\":\"string\"},\"api_key\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "base_url",
+                  "label": "Base URL",
+                  "description": "Sportarr instance URL. Defaults to https://sportarr.net if left empty.",
+                  "control": 1,
+                  "placeholder": "https://sportarr.net"
+                },
+                {
+                  "key": "api_key",
+                  "label": "API Key",
+                  "description": "API key for protected image endpoints on a self-hosted Sportarr instance.",
+                  "control": 3,
+                  "secret": true
+                }
+              ]
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "Sportarr Metadata",
+          "summary": "Build sports libraries from Sportarr league, season, and event metadata.",
+          "description_markdown": "Maps Sportarr leagues to series, seasons to seasons, and events to episodes so sports libraries behave like familiar TV libraries in Silo. The provider is installed disabled by default so administrators can opt in where it fits their library layout.",
+          "setup_markdown": "Install the plugin, configure the Sportarr base URL if you do not use `https://sportarr.net`, and add the instance API key when its protected image API is enabled. Then enable **Sportarr Metadata** in the metadata provider chain for the relevant sports library.",
+          "homepage_url": "https://sportarr.net",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-sportarr",
+          "support_url": "https://github.com/Silo-Server/silo-server/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-sportarr/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-or-later"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-sportarr",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-sportarr-freebsd-amd64",
+          "checksum": "5e4dbe2a029ddf132fc1544ba8122432105588e34211df692b66f6081a4e4094"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.theintrodb",
+        "version": "0.1.3",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "marker_provider.v1",
+            "id": "introdb",
+            "display_name": "TheIntroDB",
+            "description": "Fetches and submits intro, credits, recap, and preview markers using TheIntroDB.",
+            "metadata": {
+              "default_fetch_priority": 100,
+              "required_external_ids": [
+                "tmdb"
+              ]
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "account",
+            "title": "TheIntroDB Account",
+            "description": "Optional TheIntroDB API key used for submissions and account statistics.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"api_key\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "api_key",
+                  "label": "API Key",
+                  "description": "TheIntroDB API key from your profile.",
+                  "control": 3,
+                  "secret": true
+                }
+              ],
+              "submit_label": "Save TheIntroDB account"
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "TheIntroDB Markers",
+          "summary": "Fetch and submit intro, credits, recap, and preview markers through TheIntroDB.",
+          "description_markdown": "Adds community-maintained playback markers from TheIntroDB to movies and TV episodes. It can fetch markers without an account and can submit corrections or new markers when an API key is configured.",
+          "setup_markdown": "Install the plugin and enable **TheIntroDB** as a marker provider. Fetching works without configuration. Add your TheIntroDB API key if you want to submit markers or view account statistics.",
+          "homepage_url": "https://theintrodb.org",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-theintrodb-freebsd-amd64",
+          "checksum": "d1ff39797e0e1292a09bfbde8b6d97fc5dd5ad8f923130e73fd2d3908fb72fe4"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.tmdb",
+        "version": "1.2.26",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "tmdb",
+            "display_name": "TMDB",
+            "description": "The Movie Database — metadata for movies and TV series.",
+            "metadata": {
+              "default_priority": {
+                "episode": 3,
+                "movie": 2,
+                "season": 3,
+                "series": 3
+              }
+            }
+          },
+          {
+            "type": "image_resolver.v1",
+            "id": "tmdb",
+            "display_name": "TMDB Images",
+            "description": "Resolves tmdb:// image paths to The Movie Database image URLs.",
+            "metadata": {
+              "priority": 100,
+              "schemes": [
+                "tmdb"
+              ]
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "TMDB Metadata",
+          "summary": "Fetch movie and TV metadata and artwork from The Movie Database.",
+          "description_markdown": "Provides metadata for movies, series, seasons, and episodes, plus image resolution for TMDB artwork stored by Silo. It is a general-purpose first-party provider for movie and television libraries.",
+          "setup_markdown": "TMDB Metadata is installed as a default Silo plugin. Add or enable **TMDB** in a library's metadata provider chain; no plugin-specific configuration is required.",
+          "homepage_url": "https://www.themoviedb.org",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-or-later"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-tmdb-freebsd-amd64",
+          "checksum": "a2b09f8568640ff77aa290474eb22d9578922ac22572956b2d117293c4df9582"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.tvdb",
+        "version": "1.4.1",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "tvdb",
+            "display_name": "TVDB",
+            "description": "TheTVDB — metadata for TV series.",
+            "metadata": {
+              "default_priority": {
+                "episode": 2,
+                "season": 2,
+                "series": 2
+              }
+            }
+          },
+          {
+            "type": "image_resolver.v1",
+            "id": "tvdb",
+            "display_name": "TVDB Images",
+            "description": "Resolves tvdb:// image paths to TheTVDB image URLs.",
+            "metadata": {
+              "priority": 100,
+              "schemes": [
+                "tvdb"
+              ]
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "TVDB Metadata",
+          "summary": "Fetch series, season, episode, and artwork metadata from TheTVDB.",
+          "description_markdown": "Provides television metadata for series, seasons, and episodes, plus image resolution for TVDB artwork stored by Silo. It complements other providers when a library relies on TVDB identities or ordering.",
+          "setup_markdown": "TVDB Metadata is installed as a default Silo plugin. Add or enable **TVDB** in a television library's metadata provider chain; no plugin-specific configuration is required.",
+          "homepage_url": "https://thetvdb.com",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-or-later"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-tvdb-freebsd-amd64",
+          "checksum": "1051c8116ac8b34ce1a74583f8d4670140176172b436b080dfb89d2030bf1182"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.watchprovider.floppy",
+        "version": "0.3.1",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "watch_sync_provider.v1",
+            "id": "floppy",
+            "display_name": "Floppy",
+            "description": "Bidirectional watch history, movie and series ratings, resume progress, and live scrobbling for a self-hosted Floppy instance.",
+            "config_schema": [
+              {
+                "key": "floppy",
+                "title": "Your Floppy server",
+                "description": "Connection details for the Floppy server used by this profile.",
+                "json_schema": "{\"type\":\"object\",\"properties\":{\"base_url\":{\"type\":\"string\",\"format\":\"uri\"}},\"required\":[\"base_url\"],\"additionalProperties\":false}",
+                "required": true,
+                "admin_form": {
+                  "fields": [
+                    {
+                      "key": "base_url",
+                      "label": "Floppy server URL",
+                      "description": "Root URL of your Floppy instance. API paths are added automatically.",
+                      "control": 1,
+                      "placeholder": "https://floppy.example.com",
+                      "required": true
+                    }
+                  ]
+                }
+              }
+            ],
+            "watch_sync_provider": {
+              "auth_methods": [
+                2
+              ],
+              "export_watched": true,
+              "import_watched": true,
+              "import_progress": true,
+              "supported_media_types": [
+                1,
+                2,
+                3
+              ],
+              "external_id_namespaces": [
+                "tmdb",
+                "imdb",
+                "tvdb"
+              ],
+              "max_batch_size": 50,
+              "scrobble_playback": true,
+              "import_ratings": true,
+              "export_ratings": true
+            }
+          }
+        ],
+        "category": "Watch Providers",
+        "presentation": {
+          "display_name": "Floppy Watch Provider",
+          "summary": "Sync Silo watch activity with a self-hosted Floppy instance.",
+          "description_markdown": "Imports movie and episode history and resume progress, exports completed watches, syncs movie and series ratings in both directions, and forwards live playback start, pause, and stop events.",
+          "setup_markdown": "Connect a Silo profile by entering that profile's Floppy server URL and API token. Different profiles can use different Floppy servers. A scoped Floppy token needs the tracking preset; sending ratings to Floppy uses its `watchlist:write` scope.",
+          "homepage_url": "https://github.com/dannyvfilms/Floppy",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-floppy",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-floppy/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-floppy/releases",
+          "publisher_name": "Silo Server",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-floppy",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-watchprovider-floppy-freebsd-amd64",
+          "checksum": "f69d84723da965715cbbddfc9a09ce3b6d9ef9f903ecc2ca704f0cc0b23f2030"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.watchprovider.mdblist",
+        "version": "0.2.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "watch_sync_provider.v1",
+            "id": "mdblist",
+            "display_name": "MDBList",
+            "description": "Two-way watch history, watchlist, and movie and series ratings, resume progress import, and live scrobbling for an MDBList account.",
+            "watch_sync_provider": {
+              "auth_methods": [
+                2
+              ],
+              "export_watched": true,
+              "export_unwatched": true,
+              "import_watched": true,
+              "import_progress": true,
+              "supported_media_types": [
+                1,
+                2,
+                3
+              ],
+              "external_id_namespaces": [
+                "imdb",
+                "tmdb",
+                "tvdb"
+              ],
+              "max_batch_size": 100,
+              "import_watchlist": true,
+              "export_watchlist": true,
+              "remove_watchlist": true,
+              "provides_watchlist_order": true,
+              "scrobble_playback": true,
+              "import_ratings": true,
+              "export_ratings": true
+            }
+          }
+        ],
+        "category": "Watch Providers",
+        "presentation": {
+          "display_name": "MDBList Watch Provider",
+          "summary": "Sync Silo watch history, watchlists, and ratings with MDBList.",
+          "description_markdown": "Imports and exports movie and episode watch history, imports resume progress, syncs the MDBList watchlist in its own order, syncs movie and series ratings in both directions, and forwards live playback start, pause, and stop events.",
+          "setup_markdown": "Each Silo profile connects with its own MDBList API key, created on the API page of your [MDBList preferences](https://mdblist.com/preferences/#api). The plugin needs no server-wide settings.\n\nMDBList's free tier allows 1,000 requests a day. The plugin paces requests to about one a second per key, and when MDBList reports the limit, Silo waits before the next sync.",
+          "homepage_url": "https://mdblist.com",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-mdblist",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-mdblist/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-mdblist/releases",
+          "publisher_name": "Silo Server",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-mdblist",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-watchprovider-mdblist-freebsd-amd64",
+          "checksum": "a6a5f0cfa2fc86df8cc6e5ec7a4783c99ece57646f92b69fd730f51ae6630551"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.watchprovider.simkl",
+        "version": "0.4.1",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "watch_sync_provider.v1",
+            "id": "simkl",
+            "display_name": "Simkl",
+            "description": "Two-way watch history, plan-to-watch list, dropped shows, and ratings, plus resume progress and live scrobbling for Simkl, anime included.",
+            "watch_sync_provider": {
+              "auth_methods": [
+                3
+              ],
+              "export_watched": true,
+              "export_unwatched": true,
+              "import_watched": true,
+              "import_progress": true,
+              "supported_media_types": [
+                1,
+                2,
+                3
+              ],
+              "external_id_namespaces": [
+                "imdb",
+                "tmdb",
+                "tvdb"
+              ],
+              "max_batch_size": 100,
+              "import_watchlist": true,
+              "export_watchlist": true,
+              "remove_watchlist": true,
+              "scrobble_playback": true,
+              "import_ratings": true,
+              "export_ratings": true,
+              "sync_dropped": true,
+              "rating_export_requires_watched": [
+                1
+              ]
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "app",
+            "title": "Simkl API app",
+            "description": "The Simkl API app that profiles sign in through. Without its client ID, profiles cannot connect to Simkl.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"client_id\":{\"type\":\"string\",\"minLength\":1},\"v2_client_id\":{\"type\":\"string\"}},\"required\":[\"client_id\"],\"additionalProperties\":false}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "client_id",
+                  "label": "Client ID",
+                  "description": "Client ID of the app you created at simkl.com/settings/developer. Do not replace it while profiles are connected through it: their connections only work with this app.",
+                  "control": 1,
+                  "required": true
+                },
+                {
+                  "key": "v2_client_id",
+                  "label": "AUTH V2 client ID",
+                  "description": "Optional. Fill this in when the Client ID above belongs to an older AUTH V1 app, which Simkl retires around April 2027. New connections then sign in through this AUTH V2 app, and existing connections keep working until each profile reconnects.",
+                  "control": 1
+                }
+              ],
+              "submit_label": "Save Simkl app"
+            }
+          }
+        ],
+        "category": "Watch Providers",
+        "presentation": {
+          "display_name": "Simkl Watch Provider",
+          "summary": "Sync Silo watch history, plan-to-watch list, dropped shows, and ratings with Simkl.",
+          "description_markdown": "Imports watched movies and episodes, resume progress, the plan-to-watch list, dropped shows, and movie and series ratings from Simkl, anime included. Exports watched and unwatched titles, plan-to-watch changes, dropped shows, and ratings, and forwards live playback start, pause, and stop events. A movie rating is sent once the profile has watched the movie.",
+          "setup_markdown": "Create an app at [simkl.com/settings/developer](https://simkl.com/settings/developer/), choosing the **TV, devices & command line** type, and enter its client ID in this plugin's settings. Then connect each Silo profile from its watch-provider settings: Silo shows a code to enter at simkl.com/pin. If profiles already connected through an older AUTH V1 app, keep its client ID and enter the new app's client ID as the AUTH V2 client ID instead.",
+          "homepage_url": "https://simkl.com",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl/releases",
+          "publisher_name": "Silo Server",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-watchprovider-simkl-freebsd-amd64",
+          "checksum": "b7cf5c0720c7712682480fdc70216a638f7f86592b83bed9fc84e2bb0527a984"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.watchprovider.trakt",
+        "version": "0.2.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "watch_sync_provider.v1",
+            "id": "trakt",
+            "display_name": "Trakt",
+            "description": "Two-way watch history, resume progress, favorites, watchlist, movie and show ratings, and dropped shows, plus live scrobbling, for Trakt accounts.",
+            "watch_sync_provider": {
+              "auth_methods": [
+                3
+              ],
+              "export_watched": true,
+              "export_unwatched": true,
+              "import_watched": true,
+              "import_progress": true,
+              "supported_media_types": [
+                1,
+                2,
+                3
+              ],
+              "external_id_namespaces": [
+                "imdb",
+                "tmdb",
+                "tvdb"
+              ],
+              "max_batch_size": 100,
+              "import_favorites": true,
+              "export_favorites": true,
+              "remove_favorites": true,
+              "import_watchlist": true,
+              "export_watchlist": true,
+              "remove_watchlist": true,
+              "scrobble_playback": true,
+              "import_ratings": true,
+              "export_ratings": true,
+              "sync_dropped": true
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "app",
+            "title": "Trakt API app",
+            "description": "The Trakt API app this server signs in with. Every profile connection uses it.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"client_id\":{\"type\":\"string\"},\"client_secret\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "client_id",
+                  "label": "Client ID",
+                  "description": "Client ID of your Trakt API app.",
+                  "control": 1,
+                  "required": true
+                },
+                {
+                  "key": "client_secret",
+                  "label": "Client secret",
+                  "description": "Client secret of your Trakt API app.",
+                  "control": 3,
+                  "required": true,
+                  "secret": true
+                }
+              ],
+              "submit_label": "Save Trakt app"
+            }
+          }
+        ],
+        "category": "Watch Providers",
+        "presentation": {
+          "display_name": "Trakt Watch Provider",
+          "summary": "Sync Silo watch activity, lists, ratings, and dropped shows with Trakt.",
+          "description_markdown": "Imports watched movies and episodes, resume progress, favorites, the watchlist, movie and show ratings, and dropped shows from Trakt. Exports completed plays, unwatched titles, favorites, watchlist changes, ratings, and dropped shows, and forwards live playback start, pause, and stop events.",
+          "setup_markdown": "Create an API app at [trakt.tv/oauth/applications](https://trakt.tv/oauth/applications) with the redirect URI `urn:ietf:wg:oauth:2.0:oob`, then enter its client ID and client secret below. Each Silo profile then connects its own Trakt account from its watch-provider settings by entering a code at trakt.tv/activate.",
+          "homepage_url": "https://trakt.tv",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-trakt",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-trakt/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-trakt/releases",
+          "publisher_name": "Silo Server",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-trakt",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog/silo-watchprovider-trakt-freebsd-amd64",
+          "checksum": "7ccdb71a749c7d1e059f9312e5af85db02ae4f5608317bda6d7fd5cb3999a074"
+        }
+      }
+    }
+  ]
+}
