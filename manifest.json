@@ -1943,87 +1943,6 @@
     },
     {
       "manifest": {
-        "plugin_id": "silo.tmdb",
-        "version": "1.2.26",
-        "silo_api_version": "v1",
-        "supported_platforms": [
-          {
-            "os": "darwin",
-            "arch": "arm64"
-          },
-          {
-            "os": "linux",
-            "arch": "amd64"
-          },
-          {
-            "os": "linux",
-            "arch": "arm64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "amd64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "arm64"
-          }
-        ],
-        "capabilities": [
-          {
-            "type": "metadata_provider.v1",
-            "id": "tmdb",
-            "display_name": "TMDB",
-            "description": "The Movie Database — metadata for movies and TV series.",
-            "metadata": {
-              "default_priority": {
-                "episode": 3,
-                "movie": 2,
-                "season": 3,
-                "series": 3
-              }
-            }
-          },
-          {
-            "type": "image_resolver.v1",
-            "id": "tmdb",
-            "display_name": "TMDB Images",
-            "description": "Resolves tmdb:// image paths to The Movie Database image URLs.",
-            "metadata": {
-              "priority": 100,
-              "schemes": [
-                "tmdb"
-              ]
-            }
-          }
-        ],
-        "presentation": {
-          "display_name": "TMDB Metadata",
-          "summary": "Fetch movie and TV metadata and artwork from The Movie Database.",
-          "description_markdown": "Provides metadata for movies, series, seasons, and episodes, plus image resolution for TMDB artwork stored by Silo. It is a general-purpose first-party provider for movie and television libraries.",
-          "setup_markdown": "TMDB Metadata is installed as a default Silo plugin. Add or enable **TMDB** in a library's metadata provider chain; no plugin-specific configuration is required.",
-          "homepage_url": "https://www.themoviedb.org",
-          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
-          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb/issues",
-          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb/releases",
-          "publisher_name": "Silo",
-          "publisher_url": "https://github.com/Silo-Server",
-          "license_spdx": "AGPL-3.0-or-later"
-        }
-      },
-      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
-      "binaries": {
-        "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-tmdb-freebsd-amd64",
-          "checksum": "a2b09f8568640ff77aa290474eb22d9578922ac22572956b2d117293c4df9582"
-        },
-        "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-tmdb-freebsd-arm64",
-          "checksum": "f334a2d818d66c4215f0d6f8e3112aea73d81759cbd4322c783e356761434500"
-        }
-      }
-    },
-    {
-      "manifest": {
         "plugin_id": "silo.tvdb",
         "version": "1.4.1",
         "silo_api_version": "v1",
@@ -2629,6 +2548,87 @@
         "freebsd/arm64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261018T085115Z/silo-watchprovider-mdblist-freebsd-arm64",
           "checksum": "7408535f8b775fb156aafb7ad9ab857caa65b57d32c9f6c40530b23c76b16668"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.tmdb",
+        "version": "1.2.27",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "tmdb",
+            "display_name": "TMDB",
+            "description": "The Movie Database — metadata for movies and TV series.",
+            "metadata": {
+              "default_priority": {
+                "episode": 3,
+                "movie": 2,
+                "season": 3,
+                "series": 3
+              }
+            }
+          },
+          {
+            "type": "image_resolver.v1",
+            "id": "tmdb",
+            "display_name": "TMDB Images",
+            "description": "Resolves tmdb:// image paths to The Movie Database image URLs.",
+            "metadata": {
+              "priority": 100,
+              "schemes": [
+                "tmdb"
+              ]
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "TMDB Metadata",
+          "summary": "Fetch movie and TV metadata and artwork from The Movie Database.",
+          "description_markdown": "Provides metadata for movies, series, seasons, and episodes, plus image resolution for TMDB artwork stored by Silo. It is a general-purpose first-party provider for movie and television libraries.",
+          "setup_markdown": "TMDB Metadata is installed as a default Silo plugin. Add or enable **TMDB** in a library's metadata provider chain; no plugin-specific configuration is required.",
+          "homepage_url": "https://www.themoviedb.org",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-or-later"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261022T092447Z/silo-tmdb-freebsd-amd64",
+          "checksum": "b3e6d06e94bd77948949ae36fc3f16431f4ebf78b4d4cc356f1ad99e1e006f56"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261022T092447Z/silo-tmdb-freebsd-arm64",
+          "checksum": "ac46b36d430fe4c35e79bc5b3c0f508dae5b98352755b79a7dae78435b36dfd4"
         }
       }
     }
