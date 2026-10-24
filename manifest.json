@@ -1943,86 +1943,6 @@
     },
     {
       "manifest": {
-        "plugin_id": "silo.tvdb",
-        "version": "1.4.1",
-        "silo_api_version": "v1",
-        "supported_platforms": [
-          {
-            "os": "darwin",
-            "arch": "arm64"
-          },
-          {
-            "os": "linux",
-            "arch": "amd64"
-          },
-          {
-            "os": "linux",
-            "arch": "arm64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "amd64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "arm64"
-          }
-        ],
-        "capabilities": [
-          {
-            "type": "metadata_provider.v1",
-            "id": "tvdb",
-            "display_name": "TVDB",
-            "description": "TheTVDB — metadata for TV series.",
-            "metadata": {
-              "default_priority": {
-                "episode": 2,
-                "season": 2,
-                "series": 2
-              }
-            }
-          },
-          {
-            "type": "image_resolver.v1",
-            "id": "tvdb",
-            "display_name": "TVDB Images",
-            "description": "Resolves tvdb:// image paths to TheTVDB image URLs.",
-            "metadata": {
-              "priority": 100,
-              "schemes": [
-                "tvdb"
-              ]
-            }
-          }
-        ],
-        "presentation": {
-          "display_name": "TVDB Metadata",
-          "summary": "Fetch series, season, episode, and artwork metadata from TheTVDB.",
-          "description_markdown": "Provides television metadata for series, seasons, and episodes, plus image resolution for TVDB artwork stored by Silo. It complements other providers when a library relies on TVDB identities or ordering.",
-          "setup_markdown": "TVDB Metadata is installed as a default Silo plugin. Add or enable **TVDB** in a television library's metadata provider chain; no plugin-specific configuration is required.",
-          "homepage_url": "https://thetvdb.com",
-          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb",
-          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb/issues",
-          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb/releases",
-          "publisher_name": "Silo",
-          "publisher_url": "https://github.com/Silo-Server",
-          "license_spdx": "AGPL-3.0-or-later"
-        }
-      },
-      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb",
-      "binaries": {
-        "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-tvdb-freebsd-amd64",
-          "checksum": "1051c8116ac8b34ce1a74583f8d4670140176172b436b080dfb89d2030bf1182"
-        },
-        "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-tvdb-freebsd-arm64",
-          "checksum": "6ac670b4d7eb9b5c02f1ee7e280361196f64dd62571f179bb4f76e8d0264e853"
-        }
-      }
-    },
-    {
-      "manifest": {
         "plugin_id": "silo.watchprovider.floppy",
         "version": "0.3.1",
         "silo_api_version": "v1",
@@ -2368,90 +2288,6 @@
     },
     {
       "manifest": {
-        "plugin_id": "silo.theintrodb",
-        "version": "0.2.0",
-        "silo_api_version": "v1",
-        "supported_platforms": [
-          {
-            "os": "darwin",
-            "arch": "arm64"
-          },
-          {
-            "os": "linux",
-            "arch": "amd64"
-          },
-          {
-            "os": "linux",
-            "arch": "arm64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "amd64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "arm64"
-          }
-        ],
-        "capabilities": [
-          {
-            "type": "marker_provider.v1",
-            "id": "introdb",
-            "display_name": "TheIntroDB",
-            "description": "Fetches and submits intro, credits, recap, and preview markers using TheIntroDB.",
-            "metadata": {
-              "default_fetch_priority": 100
-            }
-          }
-        ],
-        "global_config_schema": [
-          {
-            "key": "account",
-            "title": "TheIntroDB Account",
-            "description": "Optional theintrodb.org API key used for submissions, account statistics, and a larger lookup budget.",
-            "json_schema": "{\"type\":\"object\",\"properties\":{\"api_key\":{\"type\":\"string\"}},\"additionalProperties\":false}",
-            "admin_form": {
-              "fields": [
-                {
-                  "key": "api_key",
-                  "label": "API Key",
-                  "description": "API key from your theintrodb.org account.",
-                  "control": 3,
-                  "secret": true
-                }
-              ],
-              "submit_label": "Save TheIntroDB account"
-            }
-          }
-        ],
-        "presentation": {
-          "display_name": "TheIntroDB Markers",
-          "summary": "Fetch and submit intro, credits, recap, and preview markers through TheIntroDB.",
-          "description_markdown": "Adds community-maintained playback markers from TheIntroDB to movies and TV episodes. It can fetch markers without an account and can submit corrections or new markers when an API key is configured.",
-          "setup_markdown": "Install the plugin and enable **TheIntroDB** as a marker provider. Fetching works without configuration. To submit markers or view account statistics, add an API key from your account at **theintrodb.org**. IntroDB (introdb.app) is a different service, and its keys are rejected with `401 Invalid or expired token`. A key also raises the daily lookup budget, which helps large libraries. Submissions are credited to the account that owns the key.",
-          "homepage_url": "https://theintrodb.org",
-          "source_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb",
-          "support_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb/issues",
-          "changelog_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb/releases",
-          "publisher_name": "Silo",
-          "publisher_url": "https://github.com/Silo-Server",
-          "license_spdx": "AGPL-3.0-only"
-        }
-      },
-      "repo_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb",
-      "binaries": {
-        "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261018T085115Z/silo-theintrodb-freebsd-amd64",
-          "checksum": "9df7c769e6104d912adc23a086b57cb0366ad9dd61de5d363581088a41468ec5"
-        },
-        "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261018T085115Z/silo-theintrodb-freebsd-arm64",
-          "checksum": "fd3b6ec64ac62f7cf0263bf1e986f9c7fba4a85425415bda5619cd414d267112"
-        }
-      }
-    },
-    {
-      "manifest": {
         "plugin_id": "silo.watchprovider.mdblist",
         "version": "0.3.0",
         "silo_api_version": "v1",
@@ -2553,8 +2389,92 @@
     },
     {
       "manifest": {
+        "plugin_id": "silo.theintrodb",
+        "version": "0.2.1",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "marker_provider.v1",
+            "id": "introdb",
+            "display_name": "TheIntroDB",
+            "description": "Fetches and submits intro, credits, recap, and preview markers using TheIntroDB.",
+            "metadata": {
+              "default_fetch_priority": 100
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "account",
+            "title": "TheIntroDB Account",
+            "description": "Optional theintrodb.org API key used for submissions, account statistics, and a larger lookup budget.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"api_key\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "api_key",
+                  "label": "API Key",
+                  "description": "API key from your theintrodb.org account.",
+                  "control": 3,
+                  "secret": true
+                }
+              ],
+              "submit_label": "Save TheIntroDB account"
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "TheIntroDB Markers",
+          "summary": "Fetch and submit intro, credits, recap, and preview markers through TheIntroDB.",
+          "description_markdown": "Adds community-maintained playback markers from TheIntroDB to movies and TV episodes. It can fetch markers without an account and can submit corrections or new markers when an API key is configured.",
+          "setup_markdown": "Install the plugin and enable **TheIntroDB** as a marker provider. Fetching works without configuration. To submit markers or view account statistics, add an API key from your account at **theintrodb.org**. IntroDB (introdb.app) is a different service, and its keys are rejected with `401 Invalid or expired token`. A key also raises the daily lookup budget, which helps large libraries. Submissions are credited to the account that owns the key.",
+          "homepage_url": "https://theintrodb.org",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261024T085253Z/silo-theintrodb-freebsd-amd64",
+          "checksum": "111954fb6d7b66e2ab79c4ac8d08d5f3082c857e8c6b18cacbaa9040d3a05e21"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261024T085253Z/silo-theintrodb-freebsd-arm64",
+          "checksum": "2a642365915ea6b0ec4fe759a475c4bb93bbd1caa9d94a24494c5ec63e2f04c1"
+        }
+      }
+    },
+    {
+      "manifest": {
         "plugin_id": "silo.tmdb",
-        "version": "1.2.27",
+        "version": "1.2.28",
         "silo_api_version": "v1",
         "supported_platforms": [
           {
@@ -2623,12 +2543,92 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261022T092447Z/silo-tmdb-freebsd-amd64",
-          "checksum": "b3e6d06e94bd77948949ae36fc3f16431f4ebf78b4d4cc356f1ad99e1e006f56"
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261024T085253Z/silo-tmdb-freebsd-amd64",
+          "checksum": "c38cc5524841a114b4e51bd01604f15ff1ccc87f28bff5b5fcc4d9e114e5e5b5"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261022T092447Z/silo-tmdb-freebsd-arm64",
-          "checksum": "ac46b36d430fe4c35e79bc5b3c0f508dae5b98352755b79a7dae78435b36dfd4"
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261024T085253Z/silo-tmdb-freebsd-arm64",
+          "checksum": "0108eff76fd74f7843d6f2cf69aca527fccffe759597bb8acb94f44277791b1d"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.tvdb",
+        "version": "1.5.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "tvdb",
+            "display_name": "TVDB",
+            "description": "TheTVDB — metadata for TV series.",
+            "metadata": {
+              "default_priority": {
+                "episode": 2,
+                "season": 2,
+                "series": 2
+              }
+            }
+          },
+          {
+            "type": "image_resolver.v1",
+            "id": "tvdb",
+            "display_name": "TVDB Images",
+            "description": "Resolves tvdb:// image paths to TheTVDB image URLs.",
+            "metadata": {
+              "priority": 100,
+              "schemes": [
+                "tvdb"
+              ]
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "TVDB Metadata",
+          "summary": "Fetch series, season, episode, and artwork metadata from TheTVDB.",
+          "description_markdown": "Provides television metadata for series, seasons, and episodes, plus image resolution for TVDB artwork stored by Silo. It complements other providers when a library relies on TVDB identities or ordering.",
+          "setup_markdown": "TVDB Metadata is installed as a default Silo plugin. Add or enable **TVDB** in a television library's metadata provider chain; no plugin-specific configuration is required.",
+          "homepage_url": "https://thetvdb.com",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-or-later"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261024T085253Z/silo-tvdb-freebsd-amd64",
+          "checksum": "7de25e71642dfcc67336af97e4b098acbbb7d3f61f22cc48f8befdb9fe5497b8"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261024T085253Z/silo-tvdb-freebsd-arm64",
+          "checksum": "668af5125275345364d9632775afda7c0c4374c61295415db7a5fb4582ce1c71"
         }
       }
     }
