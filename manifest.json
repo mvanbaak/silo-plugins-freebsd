@@ -2048,125 +2048,6 @@
     },
     {
       "manifest": {
-        "plugin_id": "silo.watchprovider.simkl",
-        "version": "0.4.1",
-        "silo_api_version": "v1",
-        "supported_platforms": [
-          {
-            "os": "darwin",
-            "arch": "arm64"
-          },
-          {
-            "os": "linux",
-            "arch": "amd64"
-          },
-          {
-            "os": "linux",
-            "arch": "arm64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "amd64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "arm64"
-          }
-        ],
-        "capabilities": [
-          {
-            "type": "watch_sync_provider.v1",
-            "id": "simkl",
-            "display_name": "Simkl",
-            "description": "Two-way watch history, plan-to-watch list, dropped shows, and ratings, plus resume progress and live scrobbling for Simkl, anime included.",
-            "watch_sync_provider": {
-              "auth_methods": [
-                3
-              ],
-              "export_watched": true,
-              "export_unwatched": true,
-              "import_watched": true,
-              "import_progress": true,
-              "supported_media_types": [
-                1,
-                2,
-                3
-              ],
-              "external_id_namespaces": [
-                "imdb",
-                "tmdb",
-                "tvdb"
-              ],
-              "max_batch_size": 100,
-              "import_watchlist": true,
-              "export_watchlist": true,
-              "remove_watchlist": true,
-              "scrobble_playback": true,
-              "import_ratings": true,
-              "export_ratings": true,
-              "sync_dropped": true,
-              "rating_export_requires_watched": [
-                1
-              ]
-            }
-          }
-        ],
-        "global_config_schema": [
-          {
-            "key": "app",
-            "title": "Simkl API app",
-            "description": "The Simkl API app that profiles sign in through. Without its client ID, profiles cannot connect to Simkl.",
-            "json_schema": "{\"type\":\"object\",\"properties\":{\"client_id\":{\"type\":\"string\",\"minLength\":1},\"v2_client_id\":{\"type\":\"string\"}},\"required\":[\"client_id\"],\"additionalProperties\":false}",
-            "required": true,
-            "admin_form": {
-              "fields": [
-                {
-                  "key": "client_id",
-                  "label": "Client ID",
-                  "description": "Client ID of the app you created at simkl.com/settings/developer. Do not replace it while profiles are connected through it: their connections only work with this app.",
-                  "control": 1,
-                  "required": true
-                },
-                {
-                  "key": "v2_client_id",
-                  "label": "AUTH V2 client ID",
-                  "description": "Optional. Fill this in when the Client ID above belongs to an older AUTH V1 app, which Simkl retires around April 2027. New connections then sign in through this AUTH V2 app, and existing connections keep working until each profile reconnects.",
-                  "control": 1
-                }
-              ],
-              "submit_label": "Save Simkl app"
-            }
-          }
-        ],
-        "category": "Watch Providers",
-        "presentation": {
-          "display_name": "Simkl Watch Provider",
-          "summary": "Sync Silo watch history, plan-to-watch list, dropped shows, and ratings with Simkl.",
-          "description_markdown": "Imports watched movies and episodes, resume progress, the plan-to-watch list, dropped shows, and movie and series ratings from Simkl, anime included. Exports watched and unwatched titles, plan-to-watch changes, dropped shows, and ratings, and forwards live playback start, pause, and stop events. A movie rating is sent once the profile has watched the movie.",
-          "setup_markdown": "Create an app at [simkl.com/settings/developer](https://simkl.com/settings/developer/), choosing the **TV, devices & command line** type, and enter its client ID in this plugin's settings. Then connect each Silo profile from its watch-provider settings: Silo shows a code to enter at simkl.com/pin. If profiles already connected through an older AUTH V1 app, keep its client ID and enter the new app's client ID as the AUTH V2 client ID instead.",
-          "homepage_url": "https://simkl.com",
-          "source_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl",
-          "support_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl/issues",
-          "changelog_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl/releases",
-          "publisher_name": "Silo Server",
-          "publisher_url": "https://github.com/Silo-Server",
-          "license_spdx": "AGPL-3.0-only"
-        }
-      },
-      "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl",
-      "binaries": {
-        "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-watchprovider-simkl-freebsd-amd64",
-          "checksum": "b7cf5c0720c7712682480fdc70216a638f7f86592b83bed9fc84e2bb0527a984"
-        },
-        "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-watchprovider-simkl-freebsd-arm64",
-          "checksum": "854b014c1947639397c745f33574d3a84fc810a85046ed4f8409fb1a8895beed"
-        }
-      }
-    },
-    {
-      "manifest": {
         "plugin_id": "silo.watchprovider.trakt",
         "version": "0.2.0",
         "silo_api_version": "v1",
@@ -2629,6 +2510,134 @@
         "freebsd/arm64": {
           "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261103T115624Z/silo-tmdb-freebsd-arm64",
           "checksum": "e005b0514bc57af1aee81c1352ea95f6521124c7dd4d1980adcb0b179cfbfaac"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.watchprovider.simkl",
+        "version": "0.5.0",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "watch_sync_provider.v1",
+            "id": "simkl",
+            "display_name": "Simkl",
+            "description": "Two-way watch history, plan-to-watch list, dropped shows, and ratings, plus resume progress and live scrobbling for Simkl, anime included.",
+            "watch_sync_provider": {
+              "auth_methods": [
+                3
+              ],
+              "export_watched": true,
+              "export_unwatched": true,
+              "import_watched": true,
+              "import_progress": true,
+              "supported_media_types": [
+                1,
+                2,
+                3
+              ],
+              "external_id_namespaces": [
+                "imdb",
+                "tmdb",
+                "tvdb"
+              ],
+              "max_batch_size": 100,
+              "import_watchlist": true,
+              "export_watchlist": true,
+              "remove_watchlist": true,
+              "scrobble_playback": true,
+              "import_ratings": true,
+              "export_ratings": true,
+              "sync_dropped": true,
+              "rating_export_requires_watched": [
+                1
+              ],
+              "connection_settings": [
+                {
+                  "key": "track_rewatches",
+                  "label": "Log rewatches",
+                  "description": "Send another play of a title you already watched to Simkl as a rewatch. Applies to exported plays and finished playback. Needs Simkl PRO or VIP; a free account records nothing extra.",
+                  "type": 1,
+                  "default_value": false
+                }
+              ]
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "app",
+            "title": "Simkl API app",
+            "description": "The Simkl API app that profiles sign in through. Without its client ID, profiles cannot connect to Simkl.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"client_id\":{\"type\":\"string\",\"minLength\":1},\"v2_client_id\":{\"type\":\"string\"}},\"required\":[\"client_id\"],\"additionalProperties\":false}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "client_id",
+                  "label": "Client ID",
+                  "description": "Client ID of the app you created at simkl.com/settings/developer. Do not replace it while profiles are connected through it: their connections only work with this app.",
+                  "control": 1,
+                  "required": true
+                },
+                {
+                  "key": "v2_client_id",
+                  "label": "AUTH V2 client ID",
+                  "description": "Optional. Fill this in when the Client ID above belongs to an older AUTH V1 app, which Simkl retires around April 2027. New connections then sign in through this AUTH V2 app, and existing connections keep working until each profile reconnects.",
+                  "control": 1
+                }
+              ],
+              "submit_label": "Save Simkl app"
+            }
+          }
+        ],
+        "category": "Watch Providers",
+        "presentation": {
+          "display_name": "Simkl Watch Provider",
+          "summary": "Sync Silo watch history, plan-to-watch list, dropped shows, and ratings with Simkl.",
+          "description_markdown": "Imports watched movies and episodes, resume progress, the plan-to-watch list, dropped shows, and movie and series ratings from Simkl, anime included. Exports watched and unwatched titles, plan-to-watch changes, dropped shows, and ratings, and forwards live playback start, pause, and stop events. A movie rating is sent once the profile has watched the movie.",
+          "setup_markdown": "Create an app at [simkl.com/settings/developer](https://simkl.com/settings/developer/), choosing the **TV, devices & command line** type, and enter its client ID in this plugin's settings. Then connect each Silo profile from its watch-provider settings: Silo shows a code to enter at simkl.com/pin. If profiles already connected through an older AUTH V1 app, keep its client ID and enter the new app's client ID as the AUTH V2 client ID instead.",
+          "homepage_url": "https://simkl.com",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl/releases",
+          "publisher_name": "Silo Server",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261109T125148Z/silo-watchprovider-simkl-freebsd-amd64",
+          "checksum": "25099ac0448b2e67d88d606eb3a626f6e2b0312940244f221d1289172eb30acd"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261109T125148Z/silo-watchprovider-simkl-freebsd-arm64",
+          "checksum": "c57ef0742c9b991300463affdb5cd0eaf954990dc4d55cd67f644f34fe9f3c4f"
         }
       }
     }
