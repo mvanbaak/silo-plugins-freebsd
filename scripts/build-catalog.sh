@@ -109,7 +109,19 @@ while [ "$i" -lt "$count" ]; do
 	built_here=0
 	for arch in $build_arches; do
 		out="$dist/${slug}-freebsd-${arch}"
-		if ( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" "$GO" build -trimpath -o "$out" . ); then
+		# Silo refuses an install whose binary reports a different version than the
+		# catalog lists, and a plugin reports main.version, which only the linker
+		# sets: without -X it keeps the version frozen in its embedded manifest.json.
+		if ( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" "$GO" build -trimpath \
+			-ldflags "-s -w -X main.version=$version" -o "$out" . ); then
+			# -X is a silent no-op on a symbol that does not exist, so check both
+			# ends: the variable is declared, and the binary carries the version.
+			if ! grep -q 'var version string' "$src/main.go" 2>/dev/null ||
+				! strings -a "$out" | grep -qxF "$version"; then
+				echo "  !! $id $version does not report its version; not publishing"
+				rm -f "$out"
+				continue
+			fi
 			sum=$( (sha256sum "$out" 2>/dev/null || shasum -a 256 "$out") | awk '{print $1}')
 			binaries=$(printf '%s' "$binaries" | jq -c \
 				--arg k "freebsd/$arch" \
