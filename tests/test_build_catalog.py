@@ -47,7 +47,8 @@ class BuildCatalogTests(unittest.TestCase):
         self.repo = os.path.join(self.tmp, "repo")
         os.makedirs(self.repo)
         os.makedirs(os.path.join(self.repo, "scripts"))
-        shutil.copy("/private/var/folders/gv/f5285bb523s5lyq07vrgjxl40000gn/T/opencode/silo-update.z6edsX/catalog/scripts/build-catalog.sh",
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        shutil.copy(os.path.join(repo_root, "scripts", "build-catalog.sh"),
                     os.path.join(self.repo, "scripts", "build-catalog.sh"))
         os.chmod(os.path.join(self.repo, "scripts", "build-catalog.sh"), 0o755)
         self.version = "1.2.3"
@@ -117,6 +118,7 @@ class BuildCatalogTests(unittest.TestCase):
         self.assertEqual(self.read_built().strip(), "")
         m = self.read_manifest()
         self.assertEqual(m["plugins"][0]["binaries"]["freebsd/amd64"]["url"], "old")
+        self.assertEqual(m["plugins"][0]["bundle_url"], "https://example.com/bundle.json")
 
     def test_missing_arch_rebuilds_all(self):
         entry = {
@@ -164,6 +166,7 @@ class BuildCatalogTests(unittest.TestCase):
         self.assertEqual(self.read_built().strip(), "")
         m = json.load(open(self.existing))
         self.assertEqual(m["plugins"], [])
+        self.assertFalse(os.path.exists(os.path.join(self.repo, "dist", "test-plugin-freebsd-amd64")))
 
     def test_no_change_behavior(self):
         entry = {

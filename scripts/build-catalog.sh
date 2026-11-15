@@ -66,6 +66,25 @@ while [ "$i" -lt "$count" ]; do
 
 	# Binaries already published for this exact version are reused; only the
 	# arches we are missing (all of them when the version changed) get built.
+	# Validate untrusted upstream fields before using them in paths/commands.
+	case "$id" in
+		''|*[!A-Za-z0-9._-]*) echo "skip $id (invalid plugin id)"; continue ;;
+	esac
+	case "$version" in
+		''|*[!0-9A-Za-z._+-]*) echo "skip $id (invalid version)"; continue ;;
+	esac
+	case "$repo" in
+		https://github.com/*) ;;
+		/*) ;;
+		*) echo "skip $id (invalid repo_url)"; continue ;;
+	esac
+	for arch in $ARCHES; do
+		case "$arch" in
+			amd64|arm64|386|arm) ;;
+			*) echo "skip $id (unsupported arch $arch)"; continue 2 ;;
+		esac
+	done
+
 	existing_entry=$(jq -c --arg id "$id" --arg v "$version" '
 		.plugins[]?
 		| select(.manifest.plugin_id == $id and .manifest.version == $v)
@@ -100,7 +119,7 @@ while [ "$i" -lt "$count" ]; do
 		continue
 	fi
 
-	slug=$(printf '%s' "$id" | tr '/.' '--')
+	slug=$id
 	echo "==> building $id $version:$build_arches"
 	src="$tmp/src-$slug"
 	if ! git clone --quiet --depth 1 --branch "v$version" "$repo.git" "$src" 2>/dev/null; then
@@ -158,6 +177,7 @@ while [ "$i" -lt "$count" ]; do
 
 	if [ "$failed" = 1 ] || [ "$built_here" -ne "$expected" ]; then
 		echo "skip $id (incomplete build)"
+		for arch in $build_arches; do rm -f "$dist/${slug}-freebsd-${arch}"; done
 		continue
 	fi
 
