@@ -15,6 +15,7 @@
 #     UPSTREAM   upstream catalog URL (default: Silo-Server/silo-plugins main)
 #     ALLOWLIST  optional file of plugin IDs to consider (one per line)
 #     FORCE=1    rebuild every arch, not only the missing ones
+#     BUNDLE_URL package-level Sigstore bundle URL written to new entries
 #
 #   Outputs (under <repo>):
 #     manifest.json   rewritten only when something was built
@@ -75,8 +76,23 @@ while [ "$i" -lt "$count" ]; do
 	esac
 	case "$repo" in
 		https://github.com/*) ;;
-		/*) ;;
 		*) echo "skip $id (invalid repo_url)"; continue ;;
+	esac
+	rest=${repo#https://github.com/}
+	case "$rest" in
+		''|*/*/*|*\?*|*\#*|*' '*) echo "skip $id (invalid repo_url)"; continue ;;
+	esac
+	case "$rest" in
+		*/*) ;;
+		*) echo "skip $id (invalid repo_url)"; continue ;;
+	esac
+	owner=${rest%%/*}
+	reponame=${rest#*/}
+	case "$owner" in
+		''|*[!A-Za-z0-9._-]*) echo "skip $id (invalid repo_url)"; continue ;;
+	esac
+	case "$reponame" in
+		''|*[!A-Za-z0-9._-]*) echo "skip $id (invalid repo_url)"; continue ;;
 	esac
 	for arch in $ARCHES; do
 		case "$arch" in

@@ -53,9 +53,10 @@ class BuildCatalogTests(unittest.TestCase):
         os.chmod(os.path.join(self.repo, "scripts", "build-catalog.sh"), 0o755)
         self.version = "1.2.3"
         self.src = make_source_repo(self.tmp, self.version)
-        self.repo_url = self.src  # script appends .git? src already .git bare; handle below
-        # Actually script appends .git to repo_url. Make repo_url parent.
-        self.repo_url = self.src[:-4] if self.src.endswith(".git") else self.src
+        self.repo_url = "https://github.com/example/test-plugin"
+        self.gitconfig = os.path.join(self.tmp, "gitconfig")
+        with open(self.gitconfig, "w") as f:
+            f.write('[url "file://%s"]\n    insteadOf = https://github.com/example/test-plugin.git\n' % self.src)
         self.upstream = make_upstream(self.tmp, "test.plugin", self.version, self.repo_url)
         # existing manifest default
         self.existing = os.path.join(self.repo, "manifest.json")
@@ -64,6 +65,8 @@ class BuildCatalogTests(unittest.TestCase):
 
     def run_script(self, arches="amd64", bundle_url=None, force=False, existing=None):
         env = dict(os.environ)
+        env["GIT_CONFIG_GLOBAL"] = self.gitconfig
+        env["GIT_CONFIG_NOSYSTEM"] = "1"
         env["ARCHES"] = arches
         env["UPSTREAM"] = "file://" + self.upstream
         env["GO"] = "go"
@@ -146,7 +149,7 @@ class BuildCatalogTests(unittest.TestCase):
         # update upstream path in env by overriding run
         r = subprocess.run([os.path.join(self.repo, "scripts", "build-catalog.sh"),
                             "https://example.com/releases/download/test", self.existing],
-                           cwd=self.repo, env={**os.environ, "ARCHES": "amd64", "UPSTREAM": "file://" + self.upstream, "GO": "go"},
+                           cwd=self.repo, env={**os.environ, "GIT_CONFIG_GLOBAL": self.gitconfig, "GIT_CONFIG_NOSYSTEM": "1", "ARCHES": "amd64", "UPSTREAM": "file://" + self.upstream, "GO": "go"},
                            capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertEqual(self.read_built().strip(), "")
@@ -158,7 +161,7 @@ class BuildCatalogTests(unittest.TestCase):
             json.dump(entry, f)
         r = subprocess.run([os.path.join(self.repo, "scripts", "build-catalog.sh"),
                             "https://example.com/releases/download/test", self.existing],
-                           cwd=self.repo, env={**os.environ, "ARCHES": "amd64 bogus", "UPSTREAM": "file://" + self.upstream,
+                           cwd=self.repo, env={**os.environ, "GIT_CONFIG_GLOBAL": self.gitconfig, "GIT_CONFIG_NOSYSTEM": "1", "ARCHES": "amd64 bogus", "UPSTREAM": "file://" + self.upstream,
                                             "GO": "go", "BUNDLE_URL": "https://example.com/bundle.json"},
                            capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
@@ -167,6 +170,43 @@ class BuildCatalogTests(unittest.TestCase):
         m = json.load(open(self.existing))
         self.assertEqual(m["plugins"], [])
         self.assertFalse(os.path.exists(os.path.join(self.repo, "dist", "test-plugin-freebsd-amd64")))
+
+    def test_invalid_inputs_rejected(self):
+        cases = [
+            ("bad/id", self.version, self.repo_url, ["amd64"]),
+            ("test.plugin", "1.0.0 bad", self.repo_url, ["amd64"]),
+            ("test.plugin", self.version, "/tmp/evil", ["amd64"]),
+            ("test.plugin", self.version, "https://evil.example.com/x", ["amd64"]),
+            ("test.plugin", self.version, "https://github.com/example/test-plugin/extra", ["amd64"]),
+            ("test.plugin", self.version, "https://github.com/example/test-plugin?x=1", ["amd64"]),
+            ("test.plugin", self.version, self.repo_url, ["amd64", "bogus"]),
+        ]
+        for bad_id, bad_version, bad_repo, arches in cases:
+            with self.subTest(id=bad_id, version=bad_version, repo=bad_repo, arches=arches):
+                upstream = make_upstream(self.tmp, bad_id, bad_version, bad_repo)
+                # use a distinct upstream file per case
+                entry = {"plugins": []}
+                existing = os.path.join(self.tmp, "existing-%s.json" % abs(hash((bad_id, bad_version, bad_repo, tuple(arches)))))
+                with open(existing, "w") as f:
+                    json.dump(entry, f)
+                before = open(existing, "rb").read()
+                dist = os.path.join(self.repo, "dist")
+                os.makedirs(dist, exist_ok=True)
+                pre_files = set(os.listdir(dist))
+                built = os.path.join(self.repo, "built.txt")
+                if os.path.exists(built):
+                    os.remove(built)
+                r = subprocess.run([os.path.join(self.repo, "scripts", "build-catalog.sh"),
+                                    "https://example.com/releases/download/test", existing],
+                                   cwd=self.repo, env={**os.environ, "GIT_CONFIG_GLOBAL": self.gitconfig,
+                                                      "GIT_CONFIG_NOSYSTEM": "1", "ARCHES": " ".join(arches),
+                                                      "UPSTREAM": "file://" + upstream, "GO": "go",
+                                                      "BUNDLE_URL": "https://example.com/bundle.json"},
+                                   capture_output=True, text=True)
+                self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+                self.assertEqual(open(existing, "rb").read(), before)
+                self.assertEqual(open(os.path.join(self.repo, "built.txt")).read().strip() if os.path.exists(os.path.join(self.repo, "built.txt")) else "", "")
+                self.assertEqual(set(os.listdir(dist)), pre_files)
 
     def test_no_change_behavior(self):
         entry = {
