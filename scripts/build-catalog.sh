@@ -66,20 +66,35 @@ while [ "$i" -lt "$count" ]; do
 
 	# Binaries already published for this exact version are reused; only the
 	# arches we are missing (all of them when the version changed) get built.
-	existing_bins=$(jq -c --arg id "$id" --arg v "$version" '
+	existing_entry=$(jq -c --arg id "$id" --arg v "$version" '
 		.plugins[]?
 		| select(.manifest.plugin_id == $id and .manifest.version == $v)
-		| .binaries // {}
 	' "$existing" 2>/dev/null | head -1)
+	existing_bins=$(printf '%s' "$existing_entry" | jq -c '.binaries // {}' 2>/dev/null)
 	[ -n "$existing_bins" ] || existing_bins='{}'
+	existing_bundle=$(printf '%s' "$existing_entry" | jq -r '.bundle_url // empty' 2>/dev/null)
+
+	# Reuse only signed complete entries: bundle_url present and every requested
+	# arch already built. Otherwise rebuild all requested arches (never mix).
+	reusable=0
+	if [ "${FORCE:-0}" != 1 ] && [ -n "$existing_bundle" ] && [ -n "$existing_entry" ]; then
+		reusable=1
+		for arch in $ARCHES; do
+			if ! printf '%s' "$existing_bins" | jq -e --arg a "$arch" 'has("freebsd/" + $a)' >/dev/null 2>&1; then
+				reusable=0
+				break
+			fi
+		done
+	fi
 
 	build_arches=""
-	for arch in $ARCHES; do
-		if [ "${FORCE:-0}" = 1 ] || \
-			! printf '%s' "$existing_bins" | jq -e --arg a "$arch" 'has("freebsd/" + $a)' >/dev/null 2>&1; then
+	if [ "$reusable" = 1 ]; then
+		build_arches=""
+	else
+		for arch in $ARCHES; do
 			build_arches="$build_arches $arch"
-		fi
-	done
+		done
+	fi
 	if [ -z "$build_arches" ]; then
 		echo "up-to-date $id $version"
 		continue
@@ -89,10 +104,8 @@ while [ "$i" -lt "$count" ]; do
 	echo "==> building $id $version:$build_arches"
 	src="$tmp/src-$slug"
 	if ! git clone --quiet --depth 1 --branch "v$version" "$repo.git" "$src" 2>/dev/null; then
-		if ! git clone --quiet --depth 1 "$repo.git" "$src" 2>/dev/null; then
-			echo "  !! clone failed, skipping"
-			continue
-		fi
+		echo "  !! clone failed (missing v$version tag?), skipping"
+		continue
 	fi
 
 	# Advertise every FreeBSD arch we target.
@@ -105,8 +118,12 @@ while [ "$i" -lt "$count" ]; do
 		fi
 	done
 
-	binaries="$existing_bins"
+	binaries='{}'
 	built_here=0
+	failed=0
+	expected=0
+	for _ in $build_arches; do expected=$((expected + 1)); done
+
 	for arch in $build_arches; do
 		out="$dist/${slug}-freebsd-${arch}"
 		# Silo refuses an install whose binary reports a different version than the
@@ -120,6 +137,7 @@ while [ "$i" -lt "$count" ]; do
 				! strings -a "$out" | grep -qxF "$version"; then
 				echo "  !! $id $version does not report its version; not publishing"
 				rm -f "$out"
+				failed=1
 				continue
 			fi
 			sum=$( (sha256sum "$out" 2>/dev/null || shasum -a 256 "$out") | awk '{print $1}')
@@ -128,22 +146,35 @@ while [ "$i" -lt "$count" ]; do
 				--arg u "$ASSET_BASE/$(basename "$out")" \
 				--arg c "$sum" \
 				'. + {($k): {"url":$u, "checksum":$c}}')
-			printf '%s %s %s\n' "$id" "$version" "$arch" >> "$built"
-			built_here=1
+			built_here=$((built_here + 1))
 			echo "  built $out"
 		else
 			echo "  !! build failed for $id on $arch"
+			rm -f "$out"
+			failed=1
 		fi
 	done
 	rm -rf "$src"
 
-	if [ "$built_here" = 0 ]; then
-		echo "skip $id (nothing built)"
+	if [ "$failed" = 1 ] || [ "$built_here" -ne "$expected" ]; then
+		echo "skip $id (incomplete build)"
 		continue
 	fi
 
-	jq -cn --argjson m "$sp" --arg r "$repo" --argjson b "$binaries" \
-		'{manifest:$m, repo_url:$r, binaries:$b}' > "$tmp/upd/$slug.json"
+	for arch in $build_arches; do
+		printf '%s %s %s\n' "$id" "$version" "$arch" >> "$built"
+	done
+
+	entry_bundle="${BUNDLE_URL:-}"
+	[ "$reusable" = 1 ] && entry_bundle="$existing_bundle"
+
+	if [ -n "$entry_bundle" ]; then
+		jq -cn --argjson m "$sp" --arg r "$repo" --argjson b "$binaries" --arg bu "$entry_bundle" \
+			'{manifest:$m, repo_url:$r, binaries:$b, bundle_url:$bu}' > "$tmp/upd/$slug.json"
+	else
+		jq -cn --argjson m "$sp" --arg r "$repo" --argjson b "$binaries" \
+			'{manifest:$m, repo_url:$r, binaries:$b}' > "$tmp/upd/$slug.json"
+	fi
 done
 
 if ls "$tmp/upd"/*.json >/dev/null 2>&1; then

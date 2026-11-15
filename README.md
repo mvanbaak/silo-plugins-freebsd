@@ -25,9 +25,12 @@ The `multimedia/silo` FreeBSD port additionally points its managed
 ## How it works
 
 `scripts/build-catalog.sh` fetches the upstream catalog, clones each plugin at
-its release tag, cross-compiles with `GOOS=freebsd CGO_ENABLED=0 go build`,
-computes checksums, and writes `manifest.json` (mirroring upstream manifests,
-adding `freebsd` to `supported_platforms` and a `freebsd/<arch>` binary).
+its exact release tag (no fallback to upstream main), cross-compiles with
+`GOOS=freebsd CGO_ENABLED=0 go build`, computes checksums, and writes
+`manifest.json` (mirroring upstream manifests, adding `freebsd` to
+`supported_platforms` and a `freebsd/<arch>` binary). New entries carry a
+package-level `bundle_url` pointing at the Sigstore bundle published beside
+the binaries; unsigned legacy entries are rebuilt on the first signed run.
 
 `.github/workflows/catalog.yml` runs it on a schedule / manual dispatch. It is
 **incremental**: only plugins whose upstream version is new (or that lack a

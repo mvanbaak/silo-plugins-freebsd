@@ -11,7 +11,7 @@ on:
       - ".github/workflows/catalog.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: catalog
@@ -20,6 +20,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     env:
       ARCHES: "amd64 arm64"
     steps:
@@ -35,7 +39,7 @@ jobs:
           ts=$(date -u +%Y%m%dT%H%M%SZ)
           echo "tag=catalog-${ts}" >> "$GITHUB_OUTPUT"
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/catalog-${ts}"
-          ./scripts/build-catalog.sh "$base"
+          BUNDLE_URL="${base}/plugin.sigstore.json" ./scripts/build-catalog.sh "$base"
 
       - name: Detect changes
         id: detect
@@ -47,6 +51,44 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No new plugin versions."
           fi
+
+      - name: Attest built binaries
+        if: steps.detect.outputs.changed == 'true'
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: "dist/*"
+
+      - name: Create plugin bundle
+        if: steps.detect.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          : > plugin.sigstore.json
+          for f in dist/*; do
+            [ -f "$f" ] || continue
+            gh attestation download "$f" -R "${GITHUB_REPOSITORY}"
+          done
+          cat sha256-*.jsonl > plugin.sigstore.json 2>/dev/null || true
+          rm -f sha256-*.jsonl
+          test -s plugin.sigstore.json
+
+      - name: Verify bundles
+        if: steps.detect.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          for f in dist/*; do
+            [ -f "$f" ] || continue
+            gh attestation verify "$f" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --bundle plugin.sigstore.json \
+              --cert-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/catalog.yml@refs/heads/main" \
+              --source-ref refs/heads/main \
+              --cert-oidc-issuer https://token.actions.githubusercontent.com \
+              --deny-self-hosted-runners
+          done
 
       - name: Publish release
         if: steps.detect.outputs.changed == 'true'
@@ -63,7 +105,7 @@ jobs:
           gh release create "${{ steps.build.outputs.tag }}" \
             --title "Silo plugins (FreeBSD) — $(date -u '+%Y-%m-%d %H:%M UTC')" \
             --notes-file notes.md
-          gh release upload "${{ steps.build.outputs.tag }}" dist/*
+          gh release upload "${{ steps.build.outputs.tag }}" dist/* plugin.sigstore.json
 
       - name: Commit the updated catalog
         if: steps.detect.outputs.changed == 'true'
