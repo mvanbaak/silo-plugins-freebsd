@@ -32,13 +32,18 @@ its exact release tag (no fallback to upstream main), cross-compiles with
 package-level `bundle_url` pointing at the Sigstore bundle published beside
 the binaries; unsigned legacy entries are rebuilt on the first signed run.
 
-`.github/workflows/catalog.yml` runs it on a schedule / manual dispatch. It is
-**incremental**: only plugins whose upstream version is new (or that lack a
-FreeBSD build) are compiled. Unchanged plugins keep pointing at the release
-that built them. When there are changes it publishes a new immutable release
-tagged `catalog-<UTC timestamp>` containing just those binaries, and commits the
-refreshed `manifest.json`. When nothing changed it does nothing — no build, no
-release, no commit.
+`.github/workflows/catalog.yml` runs it on a schedule / manual dispatch. It
+fetches the official and approved community catalogs, then merges them with
+`scripts/merge-upstream.jq` (official entries plus only `silo.requests.arr` and
+`silo.requests.seerr`). It is **incremental**: only plugins whose upstream
+version is new (or that lack a FreeBSD build) are compiled. Unchanged plugins
+keep pointing at the release that built them. When there are changes it
+publishes a new immutable release tagged `catalog-<UTC timestamp>` containing
+just those binaries, and commits the refreshed `manifest.json`. When nothing
+changed it does nothing — no build, no release, no commit.
+
+The archived `silo.watchprovider.trakt` entry was removed from this catalog;
+existing installs are not affected.
 
 Run it locally too:
 

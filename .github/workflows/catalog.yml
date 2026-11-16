@@ -46,8 +46,18 @@ jobs:
         with:
           go-version: "stable"
 
+      - name: Fetch upstream catalogs
+        run: |
+          set -eu
+          curl -fsSL https://raw.githubusercontent.com/Silo-Server/silo-plugins/main/manifest.json -o "$RUNNER_TEMP/official.json"
+          curl -fsSL https://raw.githubusercontent.com/Silo-Community/silo-plugins/main/manifest.json -o "$RUNNER_TEMP/community.json"
+          jq -n --slurpfile official "$RUNNER_TEMP/official.json" --slurpfile community "$RUNNER_TEMP/community.json" -f "$GITHUB_WORKSPACE/scripts/merge-upstream.jq" > "$RUNNER_TEMP/upstream.json"
+          echo "UPSTREAM=file://$RUNNER_TEMP/upstream.json" >> "$GITHUB_ENV"
+
       - name: Build changed plugins
         id: build
+        env:
+          UPSTREAM: ${{ env.UPSTREAM }}
         run: |
           ts=$(date -u +%Y%m%dT%H%M%SZ)
           echo "tag=catalog-${ts}" >> "$GITHUB_OUTPUT"
