@@ -18,21 +18,20 @@ def entry(pid, repo="https://github.com/example/repo"):
 
 class MergeUpstreamTests(unittest.TestCase):
     def run_merge(self, official, community):
-        d = tempfile.mkdtemp()
-        op = os.path.join(d, "official.json")
-        cp = os.path.join(d, "community.json")
-        with open(op, "w") as f:
-            json.dump(official, f)
-        with open(cp, "w") as f:
-            json.dump(community, f)
-        r = subprocess.run(
-            ["jq", "-n", "--slurpfile", "official", op, "--slurpfile", "community", cp, "-f", FILTER],
-            capture_output=True, text=True,
-        )
+        with tempfile.TemporaryDirectory() as d:
+            op = os.path.join(d, "official.json")
+            cp = os.path.join(d, "community.json")
+            with open(op, "w") as f:
+                json.dump(official, f)
+            with open(cp, "w") as f:
+                json.dump(community, f)
+            r = subprocess.run(
+                ["jq", "-n", "--slurpfile", "official", op, "--slurpfile", "community", cp, "-f", FILTER],
+                capture_output=True, text=True,
+            )
         return r
 
     def test_approved_community_only(self):
-        official_ids = ["silo.tmdb", "silo.tvdb", "silo.theintrodb", "silo.tmdb2" if False else "silo.tmdb"]
         # use realistic official set including defaults
         official = make_feed([entry("silo.tmdb"), entry("silo.tvdb"), entry("silo.theintrodb"), entry("silo.mdblist")])
         community = make_feed([

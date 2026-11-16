@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import os
 import shutil
 import subprocess
@@ -43,7 +44,9 @@ def make_upstream(root, plugin_id, version, repo_url):
 
 class BuildCatalogTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.mkdtemp()
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.tmp = self._tmpdir.name
+        self.addCleanup(self._tmpdir.cleanup)
         self.repo = os.path.join(self.tmp, "repo")
         os.makedirs(self.repo)
         os.makedirs(os.path.join(self.repo, "scripts"))
@@ -83,10 +86,12 @@ class BuildCatalogTests(unittest.TestCase):
         p = os.path.join(self.repo, "built.txt")
         if not os.path.exists(p):
             return ""
-        return open(p).read()
+        with open(p) as f:
+            return f.read()
 
     def read_manifest(self):
-        return json.load(open(os.path.join(self.repo, "manifest.json")))
+        with open(os.path.join(self.repo, "manifest.json")) as f:
+            return json.load(f)
 
     def test_unsigned_migration_rebuilds(self):
         # existing entry same version but no bundle_url
@@ -142,7 +147,6 @@ class BuildCatalogTests(unittest.TestCase):
         # version with no tag
         bad_version = "9.9.9"
         self.upstream = make_upstream(self.tmp, "test.plugin", bad_version, self.repo_url)
-        envup = None
         entry = {"plugins": []}
         with open(self.existing, "w") as f:
             json.dump(entry, f)
@@ -167,7 +171,8 @@ class BuildCatalogTests(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         # should not record partial build
         self.assertEqual(self.read_built().strip(), "")
-        m = json.load(open(self.existing))
+        with open(self.existing) as f:
+            m = json.load(f)
         self.assertEqual(m["plugins"], [])
         self.assertFalse(os.path.exists(os.path.join(self.repo, "dist", "test-plugin-freebsd-amd64")))
 
@@ -189,7 +194,7 @@ class BuildCatalogTests(unittest.TestCase):
                 existing = os.path.join(self.tmp, "existing-%s.json" % abs(hash((bad_id, bad_version, bad_repo, tuple(arches)))))
                 with open(existing, "w") as f:
                     json.dump(entry, f)
-                before = open(existing, "rb").read()
+                before = Path(existing).read_bytes()
                 dist = os.path.join(self.repo, "dist")
                 os.makedirs(dist, exist_ok=True)
                 pre_files = set(os.listdir(dist))
@@ -204,8 +209,9 @@ class BuildCatalogTests(unittest.TestCase):
                                                       "BUNDLE_URL": "https://example.com/bundle.json"},
                                    capture_output=True, text=True)
                 self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
-                self.assertEqual(open(existing, "rb").read(), before)
-                self.assertEqual(open(os.path.join(self.repo, "built.txt")).read().strip() if os.path.exists(os.path.join(self.repo, "built.txt")) else "", "")
+                self.assertEqual(Path(existing).read_bytes(), before)
+                _built = os.path.join(self.repo, "built.txt")
+                self.assertEqual(Path(_built).read_text().strip() if os.path.exists(_built) else "", "")
                 self.assertEqual(set(os.listdir(dist)), pre_files)
 
     def test_no_change_behavior(self):
