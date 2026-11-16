@@ -511,6 +511,163 @@
     },
     {
       "manifest": {
+        "plugin_id": "silo.audiobook-metadata",
+        "version": "0.1.9",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "metadata_provider.v1",
+            "id": "audiobook-metadata",
+            "display_name": "Audiobook Metadata",
+            "description": "Metadata provider for audiobook items. Searches Audnexus, Apple Books, and AudiobookCovers by default; Audible, Storytel, BookBeat, Audioteka, and AudiMeta can be enabled in the plugin settings.",
+            "metadata": {
+              "default_priority": {
+                "audiobook": 2
+              },
+              "lookup_provider_ids": [
+                "asin"
+              ]
+            }
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "sources",
+            "title": "Search sources",
+            "description": "Sources queried when identifying an audiobook by title. Every source still resolves an ID it already knows (ASIN or Apple Books ID), so disabling one only removes it from title searches.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"audnexus\":{\"type\":\"boolean\"},\"itunes\":{\"type\":\"boolean\"},\"audiobookcovers\":{\"type\":\"boolean\"},\"audible\":{\"type\":\"boolean\"},\"storytel\":{\"type\":\"boolean\"},\"bookbeat\":{\"type\":\"boolean\"},\"audioteka\":{\"type\":\"boolean\"},\"audimeta\":{\"type\":\"boolean\"}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "audnexus",
+                  "label": "Audnexus",
+                  "description": "Public API over Audible's catalog. Returns narrators, series, and cover art; answers in well under a second.",
+                  "control": 5,
+                  "default_value": true
+                },
+                {
+                  "key": "itunes",
+                  "label": "Apple Books",
+                  "description": "Public iTunes Search API. Answers in about a second and has no narrator field.",
+                  "control": 5,
+                  "default_value": true
+                },
+                {
+                  "key": "audiobookcovers",
+                  "label": "AudiobookCovers.com",
+                  "description": "Cover art looked up by ASIN. Fills in a cover when the matched source has none.",
+                  "control": 5,
+                  "default_value": true
+                },
+                {
+                  "key": "audible",
+                  "label": "Audible (scraper)",
+                  "description": "Parses Audible search pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "storytel",
+                  "label": "Storytel (scraper)",
+                  "description": "Parses Storytel catalog pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "bookbeat",
+                  "label": "BookBeat (scraper)",
+                  "description": "Parses BookBeat catalog pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "audioteka",
+                  "label": "Audioteka (scraper)",
+                  "description": "Parses Audioteka catalog pages. Limited to six requests per minute.",
+                  "control": 5,
+                  "default_value": false
+                },
+                {
+                  "key": "audimeta",
+                  "label": "AudiMeta",
+                  "description": "The hosted API shut down in March 2026 and answers 403. Kept for self-hosted deployments.",
+                  "control": 5,
+                  "default_value": false
+                }
+              ],
+              "submit_label": "Save search sources"
+            }
+          },
+          {
+            "key": "limits",
+            "title": "Request limits",
+            "description": "How often the plugin may call a source. A higher limit matches a large library sooner. Keep it under what the source allows.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"audnexus_per_minute\":{\"type\":\"integer\",\"minimum\":20,\"maximum\":300}},\"additionalProperties\":false}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "audnexus_per_minute",
+                  "label": "Audnexus requests per minute",
+                  "description": "Default 100, from 20 to 300. The public Audnexus API allows 300 a minute for each address, shared by everything that calls it from this server's address.",
+                  "control": 4,
+                  "default_value": 100
+                }
+              ],
+              "submit_label": "Save request limits"
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "Audiobook Metadata",
+          "summary": "Fetch audiobook metadata and artwork from multiple book and audiobook sources.",
+          "description_markdown": "Matches audiobook items against Audnexus, Apple Books, and AudiobookCovers by default, with Audible, Storytel, BookBeat, Audioteka, and AudiMeta available as optional sources. It combines those sources into metadata and artwork for Silo audiobook libraries.",
+          "setup_markdown": "Install the plugin and add **Audiobook Metadata** to the metadata provider chain for an audiobook library. Audnexus, Apple Books and AudiobookCovers are searched by default; the scrapers can be switched on in the plugin settings.",
+          "homepage_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
+          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
+          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook/issues",
+          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook/releases",
+          "publisher_name": "Silo",
+          "publisher_url": "https://github.com/Silo-Server",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.audiobook-metadata-freebsd-amd64",
+          "checksum": "20bde0f93877f08c75ec8bef0e951600f11e7f3ae1ba9e2e0b3b182078a66e1d"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.audiobook-metadata-freebsd-arm64",
+          "checksum": "1405c693219e343e1d57794a278729688df772920efaa9dcf94fa55ea7ae7951"
+        }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
+    },
+    {
+      "manifest": {
         "plugin_id": "silo.auth.ldap",
         "version": "0.1.1",
         "silo_api_version": "v1",
@@ -948,14 +1105,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-auth-ldap",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-auth-ldap-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.auth.ldap-freebsd-amd64",
           "checksum": "63a71897b2c8ecbab7e6a03af8121a4b1448da47b38bd0c2c93830f1c01065fe"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-auth-ldap-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.auth.ldap-freebsd-arm64",
           "checksum": "9e0caad7ef4059b93ae7880f3d6a32a08f29c82e32f16e54cac976f51cd9b1b5"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -1359,14 +1517,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-auth-oidc",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-auth-oidc-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.auth.oidc-freebsd-amd64",
           "checksum": "05757b0dd2e76b61a548007e44de3e50a8d4850f4e08746c62aae9c2aaa766d8"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-auth-oidc-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.auth.oidc-freebsd-arm64",
           "checksum": "7998fca1d95799aac41a110a858cd5069813a342603c7143b6e2dd7fcf74460c"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -1420,14 +1579,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-autoscan-arr",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-autoscan-arr-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.autoscan.arr-freebsd-amd64",
           "checksum": "30e4f00cdeea2248c684068305a00333b92752da77a3e6423e703dde367a970f"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-autoscan-arr-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.autoscan.arr-freebsd-arm64",
           "checksum": "002739fba7b1eaf440d29924dde461a433975ed2975c7ce63003df0ce24fdf7b"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -1563,14 +1723,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-ebook",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-ebook-metadata-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.ebook-metadata-freebsd-amd64",
           "checksum": "18779eb8b92079f7eee898f126fdd87ffeb5478d149ee14181cc9456301514b5"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-ebook-metadata-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.ebook-metadata-freebsd-arm64",
           "checksum": "3319bb3c48a065a361150b618b0af1ec98b9cc7de65c4a4d13111e7c5ce6f546"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -1708,14 +1869,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-manga",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-manga-metadata-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.manga-metadata-freebsd-amd64",
           "checksum": "93e0a40b3c0c1fc1543673827fe89bee94c71b6621a2eb91326e6c93f74afb7a"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-manga-metadata-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.manga-metadata-freebsd-arm64",
           "checksum": "7e71595528d657edce8b62062b92cf3ab18f6eb799e59604bc7cd5a45f8a0c66"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -1823,14 +1985,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-mdblist",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-mdblist-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.mdblist-freebsd-amd64",
           "checksum": "a2e3f2a9666002791cc6be5021a09db9fb0f0d259ec3be536737c917fdeb5a60"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-mdblist-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.mdblist-freebsd-arm64",
           "checksum": "4fb6c06228f9d2ee0860bf40e292c91553c7918c2bdc3ee58d4b7b8156d2f109"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -1918,14 +2081,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-sportarr",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-sportarr-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.sportarr-freebsd-amd64",
           "checksum": "ed712b434bc3a789e7e1c635c3a63ede90ee06e7a2f62d5446c24068f1e93130"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-sportarr-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.sportarr-freebsd-arm64",
           "checksum": "e7f91802a33a600633d15499a19ded51d5870727f38f07b75d629e42e073744f"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -2002,14 +2166,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-markers-theintrodb",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-theintrodb-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.theintrodb-freebsd-amd64",
           "checksum": "f0f87473e60d1db0ef60bdd26c1bab766ebee25e665afe4cd83abb8b208ff727"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-theintrodb-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.theintrodb-freebsd-arm64",
           "checksum": "21693fb425355c6c63b17bcfbb2f69787e91564c035cf264fda54bf1b6e2f597"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -2083,14 +2248,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tmdb",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-tmdb-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.tmdb-freebsd-amd64",
           "checksum": "e8ee7290e7f5da49f388feb11064330379c596a7449d10afcc6bd5edccc8c67d"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-tmdb-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.tmdb-freebsd-arm64",
           "checksum": "65ac2c771c1fd64cb1e087224ca49ee0adf77a4bdd9fbe47466e17d0da74bddf"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -2163,14 +2329,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-tvdb",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-tvdb-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.tvdb-freebsd-amd64",
           "checksum": "9a7d98e194955276f947c044423ba90ecdfe9d0a9ae96aa3d38a48e218adf4aa"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-tvdb-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.tvdb-freebsd-arm64",
           "checksum": "32bad66272f2cd65227cb1a8a75e62148361df908d26cd1dd55378cd01474e24"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -2268,14 +2435,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-floppy",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-watchprovider-floppy-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.watchprovider.floppy-freebsd-amd64",
           "checksum": "2d72dfdea71d2e36b35197f51bffa0a8bb92b831c0c10ee4fb2a91bb823a4aae"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-watchprovider-floppy-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.watchprovider.floppy-freebsd-arm64",
           "checksum": "2d5e7f27d75181252fdd7796f3cb6137f7f98c382ec20c4933b70860b69689fe"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -2369,14 +2537,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-mdblist",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-watchprovider-mdblist-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.watchprovider.mdblist-freebsd-amd64",
           "checksum": "e6623036ba0743b8b5e6474991a7192fe80c231de738e0af2025065c65ff5255"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-watchprovider-mdblist-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.watchprovider.mdblist-freebsd-arm64",
           "checksum": "29bab4b5cca6e2c4ded88323b8dd680daf60bd31a3e05fd8d80ee5efdf59070b"
         }
-      }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     },
     {
       "manifest": {
@@ -2497,152 +2666,15 @@
       "repo_url": "https://github.com/Silo-Server/silo-plugin-watchprovider-simkl",
       "binaries": {
         "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-watchprovider-simkl-freebsd-amd64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.watchprovider.simkl-freebsd-amd64",
           "checksum": "771395790cbe384b86d9ca236421b3c537413cb11f361f1b5c2ac70c8bce08b9"
         },
         "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261114T112757Z/silo-watchprovider-simkl-freebsd-arm64",
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/silo.watchprovider.simkl-freebsd-arm64",
           "checksum": "8fc065232ec7fd0c6d5eba54b037e7b311e89fa627538afa8a50dbf4079c45c2"
         }
-      }
-    },
-    {
-      "manifest": {
-        "plugin_id": "silo.audiobook-metadata",
-        "version": "0.1.8",
-        "silo_api_version": "v1",
-        "supported_platforms": [
-          {
-            "os": "darwin",
-            "arch": "arm64"
-          },
-          {
-            "os": "linux",
-            "arch": "amd64"
-          },
-          {
-            "os": "linux",
-            "arch": "arm64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "amd64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "arm64"
-          }
-        ],
-        "capabilities": [
-          {
-            "type": "metadata_provider.v1",
-            "id": "audiobook-metadata",
-            "display_name": "Audiobook Metadata",
-            "description": "Metadata provider for audiobook items. Searches Audnexus, Apple Books, and AudiobookCovers by default; Audible, Storytel, BookBeat, Audioteka, and AudiMeta can be enabled in the plugin settings.",
-            "metadata": {
-              "default_priority": {
-                "audiobook": 2
-              },
-              "lookup_provider_ids": [
-                "asin"
-              ]
-            }
-          }
-        ],
-        "global_config_schema": [
-          {
-            "key": "sources",
-            "title": "Search sources",
-            "description": "Sources queried when identifying an audiobook by title. Every source still resolves an ID it already knows (ASIN or Apple Books ID), so disabling one only removes it from title searches.",
-            "json_schema": "{\"type\":\"object\",\"properties\":{\"audnexus\":{\"type\":\"boolean\"},\"itunes\":{\"type\":\"boolean\"},\"audiobookcovers\":{\"type\":\"boolean\"},\"audible\":{\"type\":\"boolean\"},\"storytel\":{\"type\":\"boolean\"},\"bookbeat\":{\"type\":\"boolean\"},\"audioteka\":{\"type\":\"boolean\"},\"audimeta\":{\"type\":\"boolean\"}},\"additionalProperties\":false}",
-            "admin_form": {
-              "fields": [
-                {
-                  "key": "audnexus",
-                  "label": "Audnexus",
-                  "description": "Public API over Audible's catalog. Returns narrators, series, and cover art; answers in well under a second.",
-                  "control": 5,
-                  "default_value": true
-                },
-                {
-                  "key": "itunes",
-                  "label": "Apple Books",
-                  "description": "Public iTunes Search API. Answers in about a second and has no narrator field.",
-                  "control": 5,
-                  "default_value": true
-                },
-                {
-                  "key": "audiobookcovers",
-                  "label": "AudiobookCovers.com",
-                  "description": "Cover art looked up by ASIN. Fills in a cover when the matched source has none.",
-                  "control": 5,
-                  "default_value": true
-                },
-                {
-                  "key": "audible",
-                  "label": "Audible (scraper)",
-                  "description": "Parses Audible search pages. Limited to six requests per minute.",
-                  "control": 5,
-                  "default_value": false
-                },
-                {
-                  "key": "storytel",
-                  "label": "Storytel (scraper)",
-                  "description": "Parses Storytel catalog pages. Limited to six requests per minute.",
-                  "control": 5,
-                  "default_value": false
-                },
-                {
-                  "key": "bookbeat",
-                  "label": "BookBeat (scraper)",
-                  "description": "Parses BookBeat catalog pages. Limited to six requests per minute.",
-                  "control": 5,
-                  "default_value": false
-                },
-                {
-                  "key": "audioteka",
-                  "label": "Audioteka (scraper)",
-                  "description": "Parses Audioteka catalog pages. Limited to six requests per minute.",
-                  "control": 5,
-                  "default_value": false
-                },
-                {
-                  "key": "audimeta",
-                  "label": "AudiMeta",
-                  "description": "The hosted API shut down in March 2026 and answers 403. Kept for self-hosted deployments.",
-                  "control": 5,
-                  "default_value": false
-                }
-              ],
-              "submit_label": "Save search sources"
-            }
-          }
-        ],
-        "presentation": {
-          "display_name": "Audiobook Metadata",
-          "summary": "Fetch audiobook metadata and artwork from multiple book and audiobook sources.",
-          "description_markdown": "Matches audiobook items against Audnexus, Apple Books, and AudiobookCovers by default, with Audible, Storytel, BookBeat, Audioteka, and AudiMeta available as optional sources. It combines those sources into metadata and artwork for Silo audiobook libraries.",
-          "setup_markdown": "Install the plugin and add **Audiobook Metadata** to the metadata provider chain for an audiobook library. Audnexus, Apple Books and AudiobookCovers are searched by default; the scrapers can be switched on in the plugin settings.",
-          "homepage_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
-          "source_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
-          "support_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook/issues",
-          "changelog_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook/releases",
-          "publisher_name": "Silo",
-          "publisher_url": "https://github.com/Silo-Server",
-          "license_spdx": "AGPL-3.0-only"
-        }
       },
-      "repo_url": "https://github.com/Silo-Server/silo-plugin-metadata-audiobook",
-      "binaries": {
-        "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T115721Z/silo-audiobook-metadata-freebsd-amd64",
-          "checksum": "0fae3e2020b252693ac71e5c2234c36d400e115a6a4e55d922d9ecbf0d6c0cd6"
-        },
-        "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T115721Z/silo-audiobook-metadata-freebsd-arm64",
-          "checksum": "a7517d7c66e405b492372cc21d384d8bbe981e0af99052b1723ca3c0d331687b"
-        }
-      }
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
     }
   ]
 }
