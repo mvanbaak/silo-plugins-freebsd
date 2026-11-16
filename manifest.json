@@ -2,394 +2,6 @@
   "plugins": [
     {
       "manifest": {
-        "plugin_id": "silo.requests.arr",
-        "version": "0.1.0",
-        "silo_api_version": "v1",
-        "supported_platforms": [
-          {
-            "os": "linux",
-            "arch": "amd64"
-          },
-          {
-            "os": "linux",
-            "arch": "arm64"
-          },
-          {
-            "os": "darwin",
-            "arch": "arm64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "amd64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "arm64"
-          }
-        ],
-        "capabilities": [
-          {
-            "type": "request_router.v1",
-            "id": "arr",
-            "display_name": "Sonarr / Radarr",
-            "description": "Fulfills movie/series requests against multi-instance Sonarr/Radarr.",
-            "config_schema": [
-              {
-                "key": "connection",
-                "title": "Connection",
-                "json_schema": "{\"type\":\"object\",\"properties\":{\"service_kind\":{\"type\":\"string\"},\"root_folder\":{\"type\":\"string\"},\"quality_profile_id\":{\"type\":\"integer\"},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}},\"is_default\":{\"type\":\"boolean\"},\"is_4k\":{\"type\":\"boolean\"},\"is_default_4k\":{\"type\":\"boolean\"},\"search_on_add\":{\"type\":\"boolean\"},\"minimum_availability\":{\"type\":\"string\"},\"series_type\":{\"type\":\"string\"},\"season_folder\":{\"type\":\"boolean\"},\"anime_enabled\":{\"type\":\"boolean\"},\"anime_root_folder\":{\"type\":\"string\"},\"anime_quality_profile_id\":{\"type\":\"integer\"},\"anime_tags\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}}}}",
-                "admin_form": {
-                  "fields": [
-                    {
-                      "key": "service_kind",
-                      "label": "Service",
-                      "control": 6,
-                      "required": true,
-                      "options": [
-                        {
-                          "value": "radarr",
-                          "label": "Radarr (movies)"
-                        },
-                        {
-                          "value": "sonarr",
-                          "label": "Sonarr (series)"
-                        }
-                      ]
-                    },
-                    {
-                      "key": "root_folder",
-                      "label": "Root folder",
-                      "control": 6,
-                      "dynamic_options": true
-                    },
-                    {
-                      "key": "quality_profile_id",
-                      "label": "Quality profile",
-                      "control": 6,
-                      "required": true,
-                      "dynamic_options": true
-                    },
-                    {
-                      "key": "tags",
-                      "label": "Tags",
-                      "control": 7,
-                      "dynamic_options": true
-                    },
-                    {
-                      "key": "is_default",
-                      "label": "Default (HD/1080p)",
-                      "control": 5,
-                      "exclusive_group_field": "service_kind"
-                    },
-                    {
-                      "key": "is_4k",
-                      "label": "4K instance",
-                      "control": 5
-                    },
-                    {
-                      "key": "is_default_4k",
-                      "label": "Default 4K (2160p)",
-                      "control": 5,
-                      "show_when": [
-                        {
-                          "field": "is_4k",
-                          "equals": [
-                            "true"
-                          ]
-                        }
-                      ],
-                      "exclusive_group_field": "service_kind"
-                    },
-                    {
-                      "key": "search_on_add",
-                      "label": "Search on add",
-                      "control": 5,
-                      "default_value": true
-                    },
-                    {
-                      "key": "minimum_availability",
-                      "label": "Minimum availability",
-                      "control": 6,
-                      "default_value": "released",
-                      "options": [
-                        {
-                          "value": "announced",
-                          "label": "Announced"
-                        },
-                        {
-                          "value": "inCinemas",
-                          "label": "In cinemas"
-                        },
-                        {
-                          "value": "released",
-                          "label": "Released"
-                        }
-                      ],
-                      "show_when": [
-                        {
-                          "field": "service_kind",
-                          "equals": [
-                            "radarr"
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "key": "series_type",
-                      "label": "Series type",
-                      "control": 6,
-                      "default_value": "standard",
-                      "options": [
-                        {
-                          "value": "standard",
-                          "label": "Standard"
-                        },
-                        {
-                          "value": "daily",
-                          "label": "Daily"
-                        },
-                        {
-                          "value": "anime",
-                          "label": "Anime"
-                        }
-                      ],
-                      "show_when": [
-                        {
-                          "field": "service_kind",
-                          "equals": [
-                            "sonarr"
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "key": "season_folder",
-                      "label": "Season folder",
-                      "control": 5,
-                      "default_value": true,
-                      "show_when": [
-                        {
-                          "field": "service_kind",
-                          "equals": [
-                            "sonarr"
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "key": "anime_enabled",
-                      "label": "Enable anime overrides",
-                      "control": 5
-                    },
-                    {
-                      "key": "anime_root_folder",
-                      "label": "Anime root folder",
-                      "control": 6,
-                      "dynamic_options": true,
-                      "show_when": [
-                        {
-                          "field": "anime_enabled",
-                          "equals": [
-                            "true"
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "key": "anime_quality_profile_id",
-                      "label": "Anime quality profile",
-                      "control": 6,
-                      "dynamic_options": true,
-                      "show_when": [
-                        {
-                          "field": "anime_enabled",
-                          "equals": [
-                            "true"
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "key": "anime_tags",
-                      "label": "Anime tags",
-                      "control": 7,
-                      "dynamic_options": true,
-                      "show_when": [
-                        {
-                          "field": "anime_enabled",
-                          "equals": [
-                            "true"
-                          ]
-                        }
-                      ]
-                    }
-                  ],
-                  "submit_label": "Save connection",
-                  "sections": [
-                    {
-                      "key": "library",
-                      "title": "Library",
-                      "collapsible": true,
-                      "collapsed_default": true,
-                      "field_keys": [
-                        "service_kind",
-                        "root_folder",
-                        "quality_profile_id",
-                        "tags",
-                        "is_default",
-                        "is_4k",
-                        "is_default_4k",
-                        "search_on_add",
-                        "minimum_availability",
-                        "series_type",
-                        "season_folder"
-                      ]
-                    },
-                    {
-                      "key": "anime",
-                      "title": "Anime overrides",
-                      "field_keys": [
-                        "anime_enabled",
-                        "anime_root_folder",
-                        "anime_quality_profile_id",
-                        "anime_tags"
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "repo_url": "https://github.com/Silo-Server/silo-plugins-requests-arr",
-      "binaries": {
-        "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-requests-arr-freebsd-amd64",
-          "checksum": "e86d7d0beebe6b8fa94ec33d0718cd76e4e66c06cfb4134029eb8c0edd9976bd"
-        },
-        "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-requests-arr-freebsd-arm64",
-          "checksum": "069e46d155faaacf18405b6cbf5ee2ad30654505995fef97a49f2ee5126e6de8"
-        }
-      }
-    },
-    {
-      "manifest": {
-        "plugin_id": "silo.requests.seerr",
-        "version": "0.1.0",
-        "silo_api_version": "v1",
-        "supported_platforms": [
-          {
-            "os": "linux",
-            "arch": "amd64"
-          },
-          {
-            "os": "linux",
-            "arch": "arm64"
-          },
-          {
-            "os": "darwin",
-            "arch": "arm64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "amd64"
-          },
-          {
-            "os": "freebsd",
-            "arch": "arm64"
-          }
-        ],
-        "capabilities": [
-          {
-            "type": "request_router.v1",
-            "id": "seerr",
-            "display_name": "Seerr",
-            "description": "Fulfill content requests through a Seerr (Overseerr/Jellyseerr) instance.",
-            "config_schema": [
-              {
-                "key": "connection",
-                "title": "Seerr",
-                "json_schema": "{\"type\":\"object\",\"properties\":{\"supports_4k\":{\"type\":\"boolean\"},\"requester_mode\":{\"type\":\"string\"},\"auto_approve\":{\"type\":\"boolean\"},\"require_mapped_user\":{\"type\":\"boolean\"}}}",
-                "admin_form": {
-                  "fields": [
-                    {
-                      "key": "supports_4k",
-                      "label": "This Seerr handles 4K requests",
-                      "description": "Enable only if the Seerr instance has a 4K Sonarr/Radarr configured. When off, 2160p requests are not sent to this connection.",
-                      "control": 5,
-                      "default_value": false
-                    },
-                    {
-                      "key": "requester_mode",
-                      "label": "Attribute requests to",
-                      "description": "Admin user: all requests come from the API-key owner (auto-approved). Map to Silo users: attribute each request to the Seerr user matching the requester's email (created if missing).",
-                      "control": 6,
-                      "default_value": "admin",
-                      "options": [
-                        {
-                          "value": "admin",
-                          "label": "Admin user (API key owner)"
-                        },
-                        {
-                          "value": "mapped",
-                          "label": "Map to Silo users"
-                        }
-                      ]
-                    },
-                    {
-                      "key": "auto_approve",
-                      "label": "Auto-approve requests",
-                      "description": "Mapped users' requests are auto-approved. Off: they land in Seerr's per-user approval queue.",
-                      "control": 5,
-                      "default_value": true,
-                      "show_when": [
-                        {
-                          "field": "requester_mode",
-                          "equals": [
-                            "mapped"
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "key": "require_mapped_user",
-                      "label": "Fail the request if the user can't be mapped",
-                      "description": "On: a request whose Silo user can't be matched/created on Seerr fails instead of being submitted under the admin.",
-                      "control": 5,
-                      "default_value": false,
-                      "show_when": [
-                        {
-                          "field": "requester_mode",
-                          "equals": [
-                            "mapped"
-                          ]
-                        }
-                      ]
-                    }
-                  ],
-                  "submit_label": "Save connection"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "repo_url": "https://github.com/Silo-Server/silo-plugins-requests-seerr",
-      "binaries": {
-        "freebsd/amd64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224030Z/silo-requests-seerr-freebsd-amd64",
-          "checksum": "74e6262695779e42be2b1faa0b72d41813802f02c377bdc8bec2b75c671f9736"
-        },
-        "freebsd/arm64": {
-          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261014T224329Z/silo-requests-seerr-freebsd-arm64",
-          "checksum": "498802f6eaf4f2fd3e3e3d6f53c8f9282a78f0f63bc0170428d042c5b18ecfda"
-        }
-      }
-    },
-    {
-      "manifest": {
         "plugin_id": "silo.audiobook-metadata",
         "version": "0.1.9",
         "silo_api_version": "v1",
@@ -1644,7 +1256,7 @@
             "type": "metadata_provider.v1",
             "id": "manga-metadata",
             "display_name": "Manga Metadata (MangaBaka)",
-            "description": "Rich manga metadata from MangaBaka \u2014 covers, synopsis, authors, genres, publication status, publisher, and cross-provider IDs \u2014 aggregating AniList, MyAnimeList, MangaUpdates, Kitsu, Anime-Planet, and Shikimori, with a MangaDex deep fallback and AniList banner backdrops. Optional offline mode downloads MangaBaka's database for fast, rate-limit-free matching on large libraries.",
+            "description": "Rich manga metadata from MangaBaka — covers, synopsis, authors, genres, publication status, publisher, and cross-provider IDs — aggregating AniList, MyAnimeList, MangaUpdates, Kitsu, Anime-Planet, and Shikimori, with a MangaDex deep fallback and AniList banner backdrops. Optional offline mode downloads MangaBaka's database for fast, rate-limit-free matching on large libraries.",
             "metadata": {
               "default_priority": {
                 "manga": 1
@@ -1790,7 +1402,7 @@
             "type": "metadata_provider.v1",
             "id": "mdblist",
             "display_name": "MDBList",
-            "description": "IMDb, TMDB and Rotten Tomatoes ratings, MDBList's own score, age rating, certification, and missing basics. Enrichment only \u2014 never identifies an item.",
+            "description": "IMDb, TMDB and Rotten Tomatoes ratings, MDBList's own score, age rating, certification, and missing basics. Enrichment only — never identifies an item.",
             "metadata": {
               "bulk_lookup_limit": 100,
               "default_priority": {
@@ -1906,7 +1518,7 @@
             "type": "metadata_provider.v1",
             "id": "sportarr",
             "display_name": "Sportarr",
-            "description": "Sportarr \u2014 metadata for sports leagues as TV shows.",
+            "description": "Sportarr — metadata for sports leagues as TV shows.",
             "metadata": {
               "default_enabled": false,
               "default_priority": {
@@ -2087,7 +1699,7 @@
             "type": "metadata_provider.v1",
             "id": "tmdb",
             "display_name": "TMDB",
-            "description": "The Movie Database \u2014 metadata for movies and TV series.",
+            "description": "The Movie Database — metadata for movies and TV series.",
             "metadata": {
               "default_priority": {
                 "episode": 3,
@@ -2169,7 +1781,7 @@
             "type": "metadata_provider.v1",
             "id": "tvdb",
             "display_name": "TVDB",
-            "description": "TheTVDB \u2014 metadata for TV series.",
+            "description": "TheTVDB — metadata for TV series.",
             "metadata": {
               "default_priority": {
                 "episode": 2,
@@ -2554,6 +2166,585 @@
         }
       },
       "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261115T235639Z/plugin.sigstore.json"
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.requests.arr",
+        "version": "0.1.12",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "request_router.v1",
+            "id": "arr",
+            "display_name": "Sonarr / Radarr",
+            "description": "Fulfills movie/series requests against multi-instance Sonarr/Radarr.",
+            "config_schema": [
+              {
+                "key": "connection",
+                "title": "Connection",
+                "json_schema": "{\"type\":\"object\",\"properties\":{\"service_kind\":{\"type\":\"string\"},\"root_folder\":{\"type\":\"string\"},\"quality_profile_id\":{\"type\":\"integer\"},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}},\"is_default\":{\"type\":\"boolean\"},\"is_4k\":{\"type\":\"boolean\"},\"is_default_4k\":{\"type\":\"boolean\"},\"search_on_add\":{\"type\":\"boolean\"},\"monitor\":{\"type\":\"string\"},\"minimum_availability\":{\"type\":\"string\"},\"series_type\":{\"type\":\"string\"},\"season_folder\":{\"type\":\"boolean\"},\"metadata_language\":{\"type\":\"integer\"},\"anime_enabled\":{\"type\":\"boolean\"},\"anime_root_folder\":{\"type\":\"string\"},\"anime_quality_profile_id\":{\"type\":\"integer\"},\"anime_tags\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"}}}}",
+                "admin_form": {
+                  "fields": [
+                    {
+                      "key": "service_kind",
+                      "label": "Service",
+                      "description": "Detected from the server when it connects.",
+                      "control": 6,
+                      "required": true,
+                      "options": [
+                        {
+                          "value": "radarr",
+                          "label": "Radarr (movies)"
+                        },
+                        {
+                          "value": "sonarr",
+                          "label": "Sonarr (series)"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "root_folder",
+                      "label": "Root folder",
+                      "control": 6,
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "quality_profile_id",
+                      "label": "Quality profile",
+                      "control": 6,
+                      "required": true,
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "tags",
+                      "label": "Tags",
+                      "control": 7,
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "is_default",
+                      "label": "Default (HD/1080p)",
+                      "control": 5,
+                      "exclusive_group_field": "service_kind"
+                    },
+                    {
+                      "key": "is_4k",
+                      "label": "4K instance",
+                      "control": 5
+                    },
+                    {
+                      "key": "is_default_4k",
+                      "label": "Default 4K (2160p)",
+                      "control": 5,
+                      "show_when": [
+                        {
+                          "field": "is_4k",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ],
+                      "exclusive_group_field": "service_kind"
+                    },
+                    {
+                      "key": "search_on_add",
+                      "label": "Search on add",
+                      "control": 5,
+                      "default_value": true
+                    },
+                    {
+                      "key": "monitor",
+                      "label": "Monitor",
+                      "description": "Episodes Sonarr monitors when a series is added. With Search on add on, Sonarr immediately searches every monitored episode that has aired, so All episodes searches a long-running show's entire back catalog. A request for particular seasons monitors and searches only those seasons instead.",
+                      "control": 6,
+                      "default_value": "all",
+                      "options": [
+                        {
+                          "value": "all",
+                          "label": "All episodes"
+                        },
+                        {
+                          "value": "future",
+                          "label": "Future episodes"
+                        },
+                        {
+                          "value": "recent",
+                          "label": "Recent episodes (last 90 days and future)"
+                        },
+                        {
+                          "value": "lastSeason",
+                          "label": "Last season"
+                        },
+                        {
+                          "value": "firstSeason",
+                          "label": "First season"
+                        },
+                        {
+                          "value": "pilot",
+                          "label": "Pilot episode"
+                        }
+                      ],
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "sonarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "minimum_availability",
+                      "label": "Minimum availability",
+                      "control": 6,
+                      "default_value": "released",
+                      "options": [
+                        {
+                          "value": "announced",
+                          "label": "Announced"
+                        },
+                        {
+                          "value": "inCinemas",
+                          "label": "In cinemas"
+                        },
+                        {
+                          "value": "released",
+                          "label": "Released"
+                        }
+                      ],
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "radarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "series_type",
+                      "label": "Series type",
+                      "control": 6,
+                      "default_value": "standard",
+                      "options": [
+                        {
+                          "value": "standard",
+                          "label": "Standard"
+                        },
+                        {
+                          "value": "daily",
+                          "label": "Daily"
+                        },
+                        {
+                          "value": "anime",
+                          "label": "Anime"
+                        }
+                      ],
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "sonarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "season_folder",
+                      "label": "Season folder",
+                      "control": 5,
+                      "default_value": true,
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "sonarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "metadata_language",
+                      "label": "Metadata language",
+                      "description": "The language Sonarr fetches a new series' titles and descriptions in. Sonarr v5 and later; Sonarr v4 uses English.",
+                      "control": 6,
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "service_kind",
+                          "equals": [
+                            "sonarr"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "anime_enabled",
+                      "label": "Enable anime overrides",
+                      "control": 5
+                    },
+                    {
+                      "key": "anime_root_folder",
+                      "label": "Anime root folder",
+                      "control": 6,
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "anime_enabled",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "anime_quality_profile_id",
+                      "label": "Anime quality profile",
+                      "control": 6,
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "anime_enabled",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "anime_tags",
+                      "label": "Anime tags",
+                      "control": 7,
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "anime_enabled",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "submit_label": "Save connection",
+                  "sections": [
+                    {
+                      "key": "library",
+                      "title": "Library",
+                      "collapsible": true,
+                      "collapsed_default": true,
+                      "field_keys": [
+                        "service_kind",
+                        "root_folder",
+                        "quality_profile_id",
+                        "tags",
+                        "is_default",
+                        "is_4k",
+                        "is_default_4k",
+                        "search_on_add",
+                        "monitor",
+                        "minimum_availability",
+                        "series_type",
+                        "season_folder",
+                        "metadata_language"
+                      ]
+                    },
+                    {
+                      "key": "anime",
+                      "title": "Anime overrides",
+                      "field_keys": [
+                        "anime_enabled",
+                        "anime_root_folder",
+                        "anime_quality_profile_id",
+                        "anime_tags"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "request_router": {
+              "supports_seasons": true,
+              "reports_download_progress": true
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "Sonarr & Radarr Requests",
+          "summary": "Route movie and series requests to one or more Sonarr and Radarr instances.",
+          "description_markdown": "Fulfills approved Silo requests directly through Sonarr and Radarr. Multiple connections can cover HD and 4K libraries, different root folders and quality profiles, tags, search behavior, and dedicated anime overrides.",
+          "setup_markdown": "Install the plugin, then add Sonarr and Radarr connections in Silo with each service URL and API key. Configure the root folder, quality profile, tags, default and 4K roles, and any anime overrides for each connection. The plugin is stateless; Silo supplies credentials for every request.",
+          "homepage_url": "https://github.com/Silo-Community/silo-plugins-requests-arr",
+          "source_url": "https://github.com/Silo-Community/silo-plugins-requests-arr",
+          "support_url": "https://github.com/Silo-Community/silo-plugins-requests-arr/issues",
+          "changelog_url": "https://github.com/Silo-Community/silo-plugins-requests-arr/releases",
+          "publisher_name": "Silo Community",
+          "publisher_url": "https://github.com/Silo-Community",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Community/silo-plugins-requests-arr",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261116T090536Z/silo.requests.arr-freebsd-amd64",
+          "checksum": "0ccd5a397b67e59c6d7932d8dcf2aa5ea48aaeb29a777ff99e559bffd06a5468"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261116T090536Z/silo.requests.arr-freebsd-arm64",
+          "checksum": "e8a47f763f85954e667e8bb7e6826cb845953f5ce0985aae72ad7ba099171a17"
+        }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261116T090536Z/plugin.sigstore.json"
+    },
+    {
+      "manifest": {
+        "plugin_id": "silo.requests.seerr",
+        "version": "0.2.2",
+        "silo_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          },
+          {
+            "os": "linux",
+            "arch": "arm64"
+          },
+          {
+            "os": "darwin",
+            "arch": "arm64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "amd64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "arm64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "request_router.v1",
+            "id": "seerr",
+            "display_name": "Seerr",
+            "description": "Fulfill content requests through a Seerr (Overseerr/Jellyseerr) instance.",
+            "config_schema": [
+              {
+                "key": "connection",
+                "title": "Seerr",
+                "json_schema": "{\"type\":\"object\",\"properties\":{\"supports_4k\":{\"type\":\"boolean\"},\"requester_mode\":{\"type\":\"string\"},\"auto_approve\":{\"type\":\"boolean\"},\"require_mapped_user\":{\"type\":\"boolean\"},\"radarr_server_id\":{\"type\":\"string\"},\"radarr_4k_server_id\":{\"type\":\"string\"},\"sonarr_server_id\":{\"type\":\"string\"},\"sonarr_4k_server_id\":{\"type\":\"string\"}}}",
+                "admin_form": {
+                  "fields": [
+                    {
+                      "key": "supports_4k",
+                      "label": "This Seerr handles 4K requests",
+                      "description": "Enable only if the Seerr instance has a 4K Sonarr/Radarr configured. When off, 2160p requests are not sent to this connection.",
+                      "control": 5,
+                      "default_value": false
+                    },
+                    {
+                      "key": "requester_mode",
+                      "label": "Attribute requests to",
+                      "description": "Admin user: all requests come from the API-key owner (auto-approved). Map to Silo users: attribute each request to the Seerr user matching the requester's email (created if missing).",
+                      "control": 6,
+                      "default_value": "admin",
+                      "options": [
+                        {
+                          "value": "admin",
+                          "label": "Admin user (API key owner)"
+                        },
+                        {
+                          "value": "mapped",
+                          "label": "Map to Silo users"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "auto_approve",
+                      "label": "Auto-approve requests",
+                      "description": "Mapped users' requests are auto-approved. Off: they land in Seerr's per-user approval queue.",
+                      "control": 5,
+                      "default_value": true,
+                      "show_when": [
+                        {
+                          "field": "requester_mode",
+                          "equals": [
+                            "mapped"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "require_mapped_user",
+                      "label": "Fail the request if the user can't be mapped",
+                      "description": "On: a request whose Silo user can't be matched/created on Seerr fails instead of being submitted under the admin.",
+                      "control": 5,
+                      "default_value": false,
+                      "show_when": [
+                        {
+                          "field": "requester_mode",
+                          "equals": [
+                            "mapped"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "radarr_server_id",
+                      "label": "Radarr server (movies)",
+                      "description": "The Seerr Radarr server that HD movie requests go to. Ignored for series. Seerr default uses whichever server Seerr marks as default. A chosen server gets its own quality profile, root folder and tags from Seerr. Silo request routes can override this per rule.",
+                      "control": 6,
+                      "default_value": "default",
+                      "options": [
+                        {
+                          "value": "default",
+                          "label": "Seerr default"
+                        }
+                      ],
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "radarr_4k_server_id",
+                      "label": "Radarr 4K server (movies)",
+                      "description": "The Seerr 4K Radarr server that 4K movie requests go to. Ignored for series. Seerr default uses whichever server Seerr marks as default. A chosen server gets its own quality profile, root folder and tags from Seerr. Silo request routes can override this per rule.",
+                      "control": 6,
+                      "default_value": "default",
+                      "options": [
+                        {
+                          "value": "default",
+                          "label": "Seerr default"
+                        }
+                      ],
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "supports_4k",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "sonarr_server_id",
+                      "label": "Sonarr server (series)",
+                      "description": "The Seerr Sonarr server that HD series requests go to. Ignored for movies. Seerr default uses whichever server Seerr marks as default. A chosen server gets its own quality profile, root folder and tags from Seerr. Silo request routes can override this per rule.",
+                      "control": 6,
+                      "default_value": "default",
+                      "options": [
+                        {
+                          "value": "default",
+                          "label": "Seerr default"
+                        }
+                      ],
+                      "dynamic_options": true
+                    },
+                    {
+                      "key": "sonarr_4k_server_id",
+                      "label": "Sonarr 4K server (series)",
+                      "description": "The Seerr 4K Sonarr server that 4K series requests go to. Ignored for movies. Seerr default uses whichever server Seerr marks as default. A chosen server gets its own quality profile, root folder and tags from Seerr. Silo request routes can override this per rule.",
+                      "control": 6,
+                      "default_value": "default",
+                      "options": [
+                        {
+                          "value": "default",
+                          "label": "Seerr default"
+                        }
+                      ],
+                      "dynamic_options": true,
+                      "show_when": [
+                        {
+                          "field": "supports_4k",
+                          "equals": [
+                            "true"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "submit_label": "Save connection",
+                  "sections": [
+                    {
+                      "key": "connection",
+                      "title": "Seerr",
+                      "field_keys": [
+                        "supports_4k",
+                        "requester_mode",
+                        "auto_approve",
+                        "require_mapped_user"
+                      ]
+                    },
+                    {
+                      "key": "servers",
+                      "title": "Radarr and Sonarr servers",
+                      "description": "Pick which of Seerr's Radarr and Sonarr servers each request goes to. Radarr fields apply to movies and Sonarr fields to series; leave a field on Seerr default to keep Seerr's own choice. In a Silo routing rule, set only the fields for that rule's media type.",
+                      "collapsible": true,
+                      "collapsed_default": true,
+                      "field_keys": [
+                        "radarr_server_id",
+                        "radarr_4k_server_id",
+                        "sonarr_server_id",
+                        "sonarr_4k_server_id"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "request_router": {
+              "reports_download_progress": true
+            }
+          }
+        ],
+        "presentation": {
+          "display_name": "Seerr Requests",
+          "summary": "Submit Silo movie and series requests through a Seerr-compatible server.",
+          "description_markdown": "Connects Silo to Seerr, including Jellyseerr and Overseerr-compatible deployments. Seerr continues to manage its own Sonarr and Radarr services while the plugin maps Silo request identities, HD and 4K intent, and request status.",
+          "setup_markdown": "Install the plugin and add a Seerr connection in Silo with its base URL and an API key owned by a Seerr administrator or auto-approve user. Choose whether the connection handles 4K and whether requests should be attributed to the API-key owner or mapped to Silo users by email. Optionally, pick which of Seerr's Radarr and Sonarr servers HD and 4K requests go to; Silo request routes can override that choice per rule.",
+          "homepage_url": "https://github.com/seerr-team/seerr",
+          "source_url": "https://github.com/Silo-Community/silo-plugins-requests-seerr",
+          "support_url": "https://github.com/Silo-Community/silo-plugins-requests-seerr/issues",
+          "changelog_url": "https://github.com/Silo-Community/silo-plugins-requests-seerr/releases",
+          "publisher_name": "Silo Community",
+          "publisher_url": "https://github.com/Silo-Community",
+          "license_spdx": "AGPL-3.0-only"
+        }
+      },
+      "repo_url": "https://github.com/Silo-Community/silo-plugins-requests-seerr",
+      "binaries": {
+        "freebsd/amd64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261116T090536Z/silo.requests.seerr-freebsd-amd64",
+          "checksum": "74d9a5ccd5329ac353dd30b02487e95b5d55f5fc260bbd736d54f9df60f295e9"
+        },
+        "freebsd/arm64": {
+          "url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261116T090536Z/silo.requests.seerr-freebsd-arm64",
+          "checksum": "ece7fc7fbb411e6e7f1421eaa22c585bfa92423baf4d62fd907092d338a72393"
+        }
+      },
+      "bundle_url": "https://github.com/mvanbaak/silo-plugins-freebsd/releases/download/catalog-20261116T090536Z/plugin.sigstore.json"
     }
   ]
 }
