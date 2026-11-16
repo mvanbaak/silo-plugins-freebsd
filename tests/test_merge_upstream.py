@@ -77,6 +77,20 @@ class MergeUpstreamTests(unittest.TestCase):
         r = self.run_merge(official, community)
         self.assertNotEqual(r.returncode, 0)
 
+    def test_lookalike_default_metadata_ids_fail(self):
+        cases = [
+            ["silo.tmdbx", "silo.tvdb", "silo.theintrodb"],
+            ["silo.tmdb", "silo.tvdbx", "silo.theintrodb"],
+            ["silo.tmdb", "silo.tvdb", "silo.theintrodbx"],
+            ["silo.tmdbx", "silo.tvdbx", "silo.theintrodbx"],
+        ]
+        for ids in cases:
+            with self.subTest(ids=ids):
+                official = make_feed([entry(i) for i in ids] + [entry("silo.mdblist")])
+                community = make_feed([])
+                r = self.run_merge(official, community)
+                self.assertNotEqual(r.returncode, 0, r.stderr + r.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
