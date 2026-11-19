@@ -6,7 +6,7 @@ import unittest
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OFFICIAL = os.path.join(REPO_ROOT, "scripts", "official-catalog.jq")
-COMMUNITY = os.path.join(REPO_ROOT, "scripts", "community-catalog.jq")
+EXTRAS = os.path.join(REPO_ROOT, "scripts", "extras-catalog.jq")
 
 
 def make_feed(plugins):
@@ -18,12 +18,7 @@ def entry(pid, repo="https://github.com/example/repo"):
 
 
 DEFAULTS = ["silo.tmdb", "silo.tvdb", "silo.theintrodb"]
-COMMUNITY_IDS = [
-    "silo.requests.arr",
-    "silo.requests.seerr",
-    "ironicbadger.network-access.tailscale",
-    "silo.watchprovider.scrob",
-]
+EXTRA_IDS = ["community.kometa-sync"]
 
 _ABSENT = object()
 
@@ -31,10 +26,12 @@ _ABSENT = object()
 class CatalogFilterTests(unittest.TestCase):
     def run_filter(self, filter_name, arg, feed, extra=_ABSENT, extra_text=None):
         with tempfile.TemporaryDirectory() as d:
-            path = os.path.join(d, "feed.json")
-            with open(path, "w") as f:
-                json.dump(feed, f)
-            cmd = ["jq", "-n", "--slurpfile", arg, path]
+            cmd = ["jq", "-n"]
+            if feed is not _ABSENT:
+                path = os.path.join(d, "feed.json")
+                with open(path, "w") as f:
+                    json.dump(feed, f)
+                cmd += ["--slurpfile", arg, path]
             if extra is not _ABSENT:
                 extra_path = os.path.join(d, "extra.json")
                 with open(extra_path, "w") as f:
@@ -50,8 +47,8 @@ class CatalogFilterTests(unittest.TestCase):
     def run_official(self, feed):
         return self.run_filter(OFFICIAL, "official", feed)
 
-    def run_community(self, feed, extra=_ABSENT, extra_text=None):
-        return self.run_filter(COMMUNITY, "community", feed, extra, extra_text)
+    def run_extras(self, extra=_ABSENT, extra_text=None):
+        return self.run_filter(EXTRAS, "extra", _ABSENT, extra, extra_text)
 
     def ids(self, r):
         self.assertEqual(r.returncode, 0, r.stderr)
@@ -62,46 +59,34 @@ class CatalogFilterTests(unittest.TestCase):
         self.assertEqual(self.ids(self.run_official(official)),
                          DEFAULTS + ["silo.mdblist"])
 
-    def test_community_keeps_all_community_plugins(self):
-        community = make_feed([entry(i) for i in COMMUNITY_IDS])
-        self.assertEqual(self.ids(self.run_community(community)), COMMUNITY_IDS)
+    def test_extras_keeps_all_extra_plugins(self):
+        extra = make_feed([entry(i) for i in EXTRA_IDS])
+        self.assertEqual(self.ids(self.run_extras(extra)), EXTRA_IDS)
+
+    def test_extras_passes_entries_through_unchanged(self):
+        extra = make_feed([entry("community.kometa-sync",
+                                 "https://github.com/BEisem/silo-plex-artwork-sync")])
+        r = self.run_extras(extra)
+        self.assertEqual(self.ids(r), ["community.kometa-sync"])
+        self.assertEqual(json.loads(r.stdout)["plugins"][0], extra["plugins"][0])
 
     def test_outputs_do_not_overlap(self):
         official = make_feed([entry(i) for i in DEFAULTS])
-        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+        extra = make_feed([entry(i) for i in EXTRA_IDS])
         official_ids = self.ids(self.run_official(official))
-        community_ids = self.ids(self.run_community(community))
-        self.assertEqual(set(official_ids) & set(community_ids), set())
+        extra_ids = self.ids(self.run_extras(extra))
+        self.assertEqual(set(official_ids) & set(extra_ids), set())
 
     def test_duplicate_id_in_official_fails(self):
         official = make_feed([entry(i) for i in DEFAULTS] + [entry("silo.mdblist"),
                                                             entry("silo.mdblist")])
         self.assertNotEqual(self.run_official(official).returncode, 0)
 
-    def test_duplicate_id_in_community_fails(self):
-        community = make_feed([entry("silo.requests.arr"), entry("silo.requests.arr")])
-        self.assertNotEqual(self.run_community(community).returncode, 0)
-
-    def test_community_appends_extras_after_feed(self):
-        community = make_feed([entry(i) for i in COMMUNITY_IDS])
-        extra = make_feed([entry("community.kometa-sync",
-                                 "https://github.com/BEisem/silo-plex-artwork-sync")])
-        r = self.run_community(community, extra)
-        self.assertEqual(self.ids(r), COMMUNITY_IDS + ["community.kometa-sync"])
-        self.assertEqual(json.loads(r.stdout)["plugins"][-1], extra["plugins"][0])
-
-    def test_duplicate_id_between_feed_and_extras_fails(self):
-        community = make_feed([entry(i) for i in COMMUNITY_IDS])
-        extra = make_feed([entry(COMMUNITY_IDS[0])])
-        self.assertNotEqual(self.run_community(community, extra).returncode, 0)
-
-    def test_duplicate_id_between_extras_fails(self):
-        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+    def test_duplicate_id_in_extras_fails(self):
         extra = make_feed([entry("community.kometa-sync"), entry("community.kometa-sync")])
-        self.assertNotEqual(self.run_community(community, extra).returncode, 0)
+        self.assertNotEqual(self.run_extras(extra).returncode, 0)
 
-    def test_malformed_extra_fails(self):
-        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+    def test_malformed_extras_fails(self):
         cases = [
             {"plugins": "nope"},
             make_feed([{"manifest": {"plugin_id": "x"}}]),
@@ -110,27 +95,24 @@ class CatalogFilterTests(unittest.TestCase):
         ]
         for extra in cases:
             with self.subTest(extra=extra):
-                self.assertNotEqual(self.run_community(community, extra).returncode, 0)
+                self.assertNotEqual(self.run_extras(extra).returncode, 0)
 
-    def test_absent_or_empty_extra_matches_feed_only(self):
-        community = make_feed([entry(i) for i in COMMUNITY_IDS])
-        feed_only = json.loads(self.run_community(community).stdout)
-        same = [
-            self.run_community(community, make_feed([])),
-            self.run_community(community, extra_text=""),
+    def test_empty_extras_yields_empty_plugins(self):
+        cases = [
+            self.run_extras(make_feed([])),
+            self.run_extras(extra_text=""),
         ]
-        for r in same:
-            self.assertEqual(json.loads(r.stdout), feed_only, r.stderr)
+        for r in cases:
+            self.assertEqual(json.loads(r.stdout), {"plugins": []}, r.stderr)
+
+    def test_missing_extras_yields_empty_plugins(self):
+        r = self.run_extras()
+        self.assertEqual(json.loads(r.stdout), {"plugins": []}, r.stderr)
 
     def test_malformed_official_fails(self):
         self.assertNotEqual(self.run_official({"plugins": "nope"}).returncode, 0)
         bad = make_feed([entry("silo.mdblist"), {"manifest": {"plugin_id": "x"}}])
         self.assertNotEqual(self.run_official(bad).returncode, 0)
-
-    def test_malformed_community_fails(self):
-        self.assertNotEqual(self.run_community({"plugins": "nope"}).returncode, 0)
-        self.assertNotEqual(
-            self.run_community({"plugins": [{"manifest": {"plugin_id": "x"}}]}).returncode, 0)
 
     def test_empty_official_fails(self):
         self.assertNotEqual(self.run_official(make_feed([])).returncode, 0)

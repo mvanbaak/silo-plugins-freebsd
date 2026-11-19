@@ -260,7 +260,7 @@ class BuildCatalogTests(unittest.TestCase):
         community = make_upstream(self.tmp, "test.community", self.version, self.repo_url,
                                   "upstream-community.json")
         official_manifest = os.path.join(self.repo, "manifest.json")
-        community_manifest = os.path.join(self.repo, "community-manifest.json")
+        community_manifest = os.path.join(self.repo, "thirdparty-manifest.json")
         official_built = os.path.join(self.repo, "built-official.txt")
         community_built = os.path.join(self.repo, "built-community.txt")
         bundle = "https://example.com/bundle.json"
@@ -296,7 +296,7 @@ class BuildCatalogTests(unittest.TestCase):
 
     def test_manifest_only_selection_keeps_default_built_path(self):
         # MANIFEST alone: existing defaults to it, built.txt default still used.
-        community_manifest = os.path.join(self.repo, "community-manifest.json")
+        community_manifest = os.path.join(self.repo, "thirdparty-manifest.json")
         r = self.run_script(bundle_url="https://example.com/bundle.json", existing=None,
                             manifest=community_manifest)
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)

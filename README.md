@@ -15,24 +15,30 @@ This repository publishes two catalogs from the same signed release:
 | Catalog | URL | Contents |
 | --- | --- | --- |
 | Official | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/manifest.json` | Only the plugins from Silo's official catalog |
-| Community | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/community-manifest.json` | The Silo community catalog plus the maintainer-listed extras in `scripts/community-extra.txt` |
+| Third-party extras | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/thirdparty-manifest.json` | Only the extras listed in `scripts/extras.txt` |
 
 In Silo: **Admin → Plugins → Repositories → add this URL**, enabled. Add the
-official one first; add the community one as a second repository if you want
+official one first; add the extras one as a second repository if you want
 those plugins too.
 
 Then install plugins from **Admin → Plugins → Catalog**.
 
-The community catalog mirrors the [Silo-Community](https://github.com/Silo-Community/silo-plugins)
-feed and adds the repository URLs listed in `scripts/community-extra.txt`,
-each resolved to its latest GitHub release. Those extra plugins are not
-reviewed by anybody: this repository only republishes them, and Silo installs
-them as an external source.
+The extras catalog carries plugins that neither Silo's official catalog nor the
+[Silo-Community](https://github.com/Silo-Community/silo-plugins) feed ships.
+List one repository URL per line in `scripts/extras.txt`; the workflow resolves
+each one to that repository's latest GitHub release and copies that release's
+`manifest.json` into the catalog. These plugins are unreviewed third-party
+code: this repository only republishes them, and the FreeBSD port shows this
+catalog as an external source.
+
+If an installation still has the old `community-manifest.json` repository
+added, delete that stale row in **Admin → Plugins → Repositories**: the old URL
+now returns 404.
 
 The `multimedia/silo` FreeBSD port additionally points its managed
 "Silo maintained" repository at the official catalog, so the default plugins
-(`silo.tmdb`, `silo.tvdb`, `silo.theintrodb`) install automatically. The
-community plugins are never part of that catalog.
+(`silo.tmdb`, `silo.tvdb`, `silo.theintrodb`) install automatically. The extras
+are never part of that catalog.
 
 ## How it works
 
@@ -47,29 +53,25 @@ signed run.
 
 Two jq filters turn the upstream feeds into builder input: `official-catalog.jq`
 requires `silo.tmdb`, `silo.tvdb` and `silo.theintrodb` and keeps only the
-official feed, `community-catalog.jq` mirrors the whole community feed and
-appends the extras from `scripts/community-extra.txt`. Both reject malformed
-entries and duplicate plugin IDs; the community filter rejects a duplicate
-across the feed and the extras too.
+official feed, `extras-catalog.jq` validates the entries assembled from
+`scripts/extras.txt`. Both reject malformed entries and duplicate plugin IDs.
 
 A plugin's own `manifest.json` uses protobuf's JSON encoding (protojson), where
 enum fields such as `admin_form.fields[].control` are names like
 `ADMIN_FORM_CONTROL_TEXT`. Silo reads catalog indexes with Go's
 `encoding/json` into the same protobuf message, which only accepts the numeric
-values (`1`). The Silo-Community feed already ships the numeric form, but an
-extra repository's release manifest does not, so `scripts/silocatalog`
-(`normalize`) converts it before the extra entry is assembled. Normalization is
-strict: an unknown field fails the run instead of being dropped, so bumping the
-pinned `silo-plugin-sdk` is the fix when a manifest gains a field. The same tool
-(`check`) decodes both finished catalogs exactly the way Silo does, and the
-workflow fails before attesting or publishing if either no longer decodes.
+values (`1`). An extra repository's release manifest does not ship the numeric
+form, so `scripts/silocatalog` (`normalize`) converts it before the extra entry
+is assembled. Normalization is strict: an unknown field fails the run instead
+of being dropped, so bumping the pinned `silo-plugin-sdk` is the fix when a
+manifest gains a field. The same tool (`check`) decodes both finished catalogs
+exactly the way Silo does, and the workflow fails before attesting or
+publishing if either no longer decodes.
 
 `.github/workflows/catalog.yml` runs on a schedule / manual dispatch and builds
-both catalogs in one run: the official manifest from
-[Silo-Server/silo-plugins](https://github.com/Silo-Server/silo-plugins) and the
-community manifest from
-[Silo-Community/silo-plugins](https://github.com/Silo-Community/silo-plugins)
-plus the extras in `scripts/community-extra.txt`.
+both catalogs in one run: `manifest.json` from
+[Silo-Server/silo-plugins](https://github.com/Silo-Server/silo-plugins) and
+`thirdparty-manifest.json` from the extras in `scripts/extras.txt`.
 It is **incremental**: only plugins whose upstream version is new (or that lack
 a FreeBSD build) are compiled. Unchanged plugins keep pointing at the release
 that built them. When there are changes it attests all binaries once, publishes

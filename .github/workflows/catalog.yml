@@ -53,17 +53,17 @@ jobs:
           set -eu
           ( cd "$GITHUB_WORKSPACE/scripts/silocatalog" && go build -o "$RUNNER_TEMP/silocatalog" . )
 
-      - name: Fetch upstream catalogs
+      - name: Fetch upstream catalog and extras
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           curl -fsSL https://raw.githubusercontent.com/Silo-Server/silo-plugins/main/manifest.json -o "$RUNNER_TEMP/official.json"
-          curl -fsSL https://raw.githubusercontent.com/Silo-Community/silo-plugins/main/manifest.json -o "$RUNNER_TEMP/community.json"
 
-          # Repositories the community catalog carries beyond the Silo-Community
-          # feed. Each one is resolved to its latest GitHub release; the builder
-          # clones v<manifest.version>, so the tag and the manifest must agree.
+          # Repositories the extras catalog carries, because neither Silo feed
+          # ships them. Each one is resolved to its latest GitHub release; the
+          # builder clones v<manifest.version>, so the tag and the manifest must
+          # agree.
           entries="$RUNNER_TEMP/community-extra-entries.jsonl"
           : > "$entries"
           while IFS= read -r line || [ -n "$line" ]; do
@@ -112,20 +112,19 @@ jobs:
             fi
             jq -c --arg url "$url" '{manifest: ., repo_url: $url}' \
               "$RUNNER_TEMP/community-extra-manifest.json" >> "$entries"
-          done < "$GITHUB_WORKSPACE/scripts/community-extra.txt"
+          done < "$GITHUB_WORKSPACE/scripts/extras.txt"
           jq -s '{plugins: .}' "$entries" > "$RUNNER_TEMP/community-extra.json"
 
           jq -n --slurpfile official "$RUNNER_TEMP/official.json" -f "$GITHUB_WORKSPACE/scripts/official-catalog.jq" > "$RUNNER_TEMP/upstream-official.json"
-          jq -n --slurpfile community "$RUNNER_TEMP/community.json" \
-            --slurpfile extra "$RUNNER_TEMP/community-extra.json" \
-            -f "$GITHUB_WORKSPACE/scripts/community-catalog.jq" > "$RUNNER_TEMP/upstream-community.json"
+          jq -n --slurpfile extra "$RUNNER_TEMP/community-extra.json" \
+            -f "$GITHUB_WORKSPACE/scripts/extras-catalog.jq" > "$RUNNER_TEMP/upstream-community.json"
           # Both catalogs publish binaries into one dist/ and one release, so an
-          # id in both feeds would overwrite a binary one manifest already lists.
+          # id in both would overwrite a binary one manifest already lists.
           dup=$(jq -nr \
             --slurpfile o "$RUNNER_TEMP/upstream-official.json" \
-            --slurpfile c "$RUNNER_TEMP/upstream-community.json" '
+            --slurpfile e "$RUNNER_TEMP/upstream-community.json" '
             [($o[0].plugins[].manifest.plugin_id)] as $a
-            | [($c[0].plugins[].manifest.plugin_id)] as $b
+            | [($e[0].plugins[].manifest.plugin_id)] as $b
             | [$a[] | select(. as $id | $b | index($id))] | join(",")')
           if [ -n "$dup" ]; then
             echo "::error::plugin ids in both catalogs: $dup"
@@ -146,7 +145,7 @@ jobs:
             ./scripts/build-catalog.sh "$base"
           BUNDLE_URL="${base}/plugin.sigstore.json" \
             UPSTREAM="file://$RUNNER_TEMP/upstream-community.json" \
-            MANIFEST="$GITHUB_WORKSPACE/community-manifest.json" \
+            MANIFEST="$GITHUB_WORKSPACE/thirdparty-manifest.json" \
             BUILT="$RUNNER_TEMP/built-community.txt" \
             ./scripts/build-catalog.sh "$base"
           cat "$RUNNER_TEMP/built-official.txt" "$RUNNER_TEMP/built-community.txt" > built.txt
@@ -154,7 +153,7 @@ jobs:
       - name: Verify catalogs decode like Silo
         run: |
           set -eu
-          for f in "$GITHUB_WORKSPACE/manifest.json" "$GITHUB_WORKSPACE/community-manifest.json"; do
+          for f in "$GITHUB_WORKSPACE/manifest.json" "$GITHUB_WORKSPACE/thirdparty-manifest.json"; do
             if ! "$RUNNER_TEMP/silocatalog" check "$f"; then
               echo "::error::$f does not decode as Silo reads it"
               exit 1
@@ -214,7 +213,7 @@ jobs:
             echo
             while read -r id ver arch; do echo "- \`${id}\` ${ver} (${arch})"; done < built.txt
             echo
-            echo "_Built from the upstream catalogs at https://github.com/Silo-Server/silo-plugins and https://github.com/Silo-Community/silo-plugins_"
+            echo "_Built from the official catalog at https://github.com/Silo-Server/silo-plugins and the extras in scripts/extras.txt_"
           } > notes.md
           gh release create "${{ steps.build.outputs.tag }}" \
             --title "Silo plugins (FreeBSD) — $(date -u '+%Y-%m-%d %H:%M UTC')" \
@@ -226,6 +225,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json community-manifest.json
+          git add manifest.json thirdparty-manifest.json
           git commit -m "catalog: update $(wc -l < built.txt | tr -d ' ') plugin build(s)"
           git push

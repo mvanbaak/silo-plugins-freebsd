@@ -54,7 +54,7 @@ class SiloCatalogTests(unittest.TestCase):
         self.assertIn("cannot unmarshal string", r.stderr)
 
     def test_check_accepts_repository_catalogs(self):
-        for name in ("manifest.json", "community-manifest.json"):
+        for name in ("manifest.json", "thirdparty-manifest.json"):
             with self.subTest(catalog=name):
                 path = ROOT / name
                 r = run_tool("check", str(path))
