@@ -192,12 +192,6 @@ class BuildCatalogTests(unittest.TestCase):
         for bad_id, bad_version, bad_repo, arches in cases:
             with self.subTest(id=bad_id, version=bad_version, repo=bad_repo, arches=arches):
                 upstream = make_upstream(self.tmp, bad_id, bad_version, bad_repo)
-                # use a distinct upstream file per case
-                entry = {"plugins": []}
-                existing = os.path.join(self.tmp, "existing-%s.json" % abs(hash((bad_id, bad_version, bad_repo, tuple(arches)))))
-                with open(existing, "w") as f:
-                    json.dump(entry, f)
-                before = Path(existing).read_bytes()
                 dist = os.path.join(self.repo, "dist")
                 os.makedirs(dist, exist_ok=True)
                 pre_files = set(os.listdir(dist))
@@ -211,7 +205,7 @@ class BuildCatalogTests(unittest.TestCase):
                                                       "UPSTREAM": "file://" + upstream, "GO": "go"},
                                    capture_output=True, text=True)
                 self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
-                self.assertEqual(json.loads(Path(existing).read_text()), entry)
+                self.assertEqual(self.read_manifest(), {"plugins": []})
                 _built = os.path.join(self.repo, "built.txt")
                 self.assertEqual(Path(_built).read_text().strip() if os.path.exists(_built) else "", "")
                 self.assertEqual(set(os.listdir(dist)), pre_files)
@@ -249,6 +243,22 @@ class BuildCatalogTests(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertEqual([p["manifest"]["plugin_id"] for p in self.read_manifest()["plugins"]],
                          ["test.plugin"])
+
+    def test_removing_the_last_plugin_rewrites_without_building(self):
+        entry = {
+            "manifest": {"plugin_id": "test.plugin", "version": self.version, "silo_api_version": "v1",
+                         "supported_platforms": [{"os": "freebsd", "arch": "amd64"}], "capabilities": []},
+            "repo_url": self.repo_url,
+            "binaries": {"freebsd/amd64": {"url": "old", "checksum": "old"}},
+        }
+        with open(self.existing, "w") as f:
+            json.dump({"plugins": [entry]}, f)
+        with open(self.upstream, "w") as f:
+            json.dump({"plugins": []}, f)
+        r = self.run_script()
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertEqual(self.read_built().strip(), "")
+        self.assertEqual(self.read_manifest(), {"plugins": []})
 
     def test_prepare_step_builds_through_plugin_makefile(self):
         shutil.rmtree(self.src)

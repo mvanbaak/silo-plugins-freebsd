@@ -36,7 +36,7 @@ binaries. Each release still ships `plugin.sigstore.json`, so a downloaded
 binary can be checked by hand:
 
 ```sh
-gh attestation verify plugin-freebsd-amd64 --repo mvanbaak/silo-plugins-freebsd
+gh attestation verify <downloaded-binary> --repo mvanbaak/silo-plugins-freebsd
 ```
 
 ## No port patches
