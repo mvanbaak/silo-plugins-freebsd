@@ -25,24 +25,33 @@ COMMUNITY_IDS = [
     "silo.watchprovider.scrob",
 ]
 
+_ABSENT = object()
+
 
 class CatalogFilterTests(unittest.TestCase):
-    def run_filter(self, filter_name, arg, feed):
+    def run_filter(self, filter_name, arg, feed, extra=_ABSENT, extra_text=None):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "feed.json")
             with open(path, "w") as f:
                 json.dump(feed, f)
-            r = subprocess.run(
-                ["jq", "-n", "--slurpfile", arg, path, "-f", filter_name],
-                capture_output=True, text=True,
-            )
+            cmd = ["jq", "-n", "--slurpfile", arg, path]
+            if extra is not _ABSENT:
+                extra_path = os.path.join(d, "extra.json")
+                with open(extra_path, "w") as f:
+                    if extra_text is not None:
+                        f.write(extra_text)
+                    else:
+                        json.dump(extra, f)
+                cmd += ["--slurpfile", "extra", extra_path]
+            cmd += ["-f", filter_name]
+            r = subprocess.run(cmd, capture_output=True, text=True)
         return r
 
     def run_official(self, feed):
         return self.run_filter(OFFICIAL, "official", feed)
 
-    def run_community(self, feed):
-        return self.run_filter(COMMUNITY, "community", feed)
+    def run_community(self, feed, extra=_ABSENT, extra_text=None):
+        return self.run_filter(COMMUNITY, "community", feed, extra, extra_text)
 
     def ids(self, r):
         self.assertEqual(r.returncode, 0, r.stderr)
@@ -72,6 +81,46 @@ class CatalogFilterTests(unittest.TestCase):
     def test_duplicate_id_in_community_fails(self):
         community = make_feed([entry("silo.requests.arr"), entry("silo.requests.arr")])
         self.assertNotEqual(self.run_community(community).returncode, 0)
+
+    def test_community_appends_extras_after_feed(self):
+        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+        extra = make_feed([entry("community.kometa-sync",
+                                 "https://github.com/BEisem/silo-plex-artwork-sync")])
+        r = self.run_community(community, extra)
+        self.assertEqual(self.ids(r), COMMUNITY_IDS + ["community.kometa-sync"])
+        self.assertEqual(json.loads(r.stdout)["plugins"][-1], extra["plugins"][0])
+
+    def test_duplicate_id_between_feed_and_extras_fails(self):
+        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+        extra = make_feed([entry(COMMUNITY_IDS[0])])
+        self.assertNotEqual(self.run_community(community, extra).returncode, 0)
+
+    def test_duplicate_id_between_extras_fails(self):
+        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+        extra = make_feed([entry("community.kometa-sync"), entry("community.kometa-sync")])
+        self.assertNotEqual(self.run_community(community, extra).returncode, 0)
+
+    def test_malformed_extra_fails(self):
+        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+        cases = [
+            {"plugins": "nope"},
+            make_feed([{"manifest": {"plugin_id": "x"}}]),
+            make_feed(["nope"]),
+            [],
+        ]
+        for extra in cases:
+            with self.subTest(extra=extra):
+                self.assertNotEqual(self.run_community(community, extra).returncode, 0)
+
+    def test_absent_or_empty_extra_matches_feed_only(self):
+        community = make_feed([entry(i) for i in COMMUNITY_IDS])
+        feed_only = json.loads(self.run_community(community).stdout)
+        same = [
+            self.run_community(community, make_feed([])),
+            self.run_community(community, extra_text=""),
+        ]
+        for r in same:
+            self.assertEqual(json.loads(r.stdout), feed_only, r.stderr)
 
     def test_malformed_official_fails(self):
         self.assertNotEqual(self.run_official({"plugins": "nope"}).returncode, 0)

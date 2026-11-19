@@ -15,13 +15,19 @@ This repository publishes two catalogs from the same signed release:
 | Catalog | URL | Contents |
 | --- | --- | --- |
 | Official | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/manifest.json` | Only the plugins from Silo's official catalog |
-| Community | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/community-manifest.json` | Only the plugins from the Silo community catalog |
+| Community | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/community-manifest.json` | The Silo community catalog plus the maintainer-listed extras in `scripts/community-extra.txt` |
 
 In Silo: **Admin → Plugins → Repositories → add this URL**, enabled. Add the
 official one first; add the community one as a second repository if you want
 those plugins too.
 
 Then install plugins from **Admin → Plugins → Catalog**.
+
+The community catalog mirrors the [Silo-Community](https://github.com/Silo-Community/silo-plugins)
+feed and adds the repository URLs listed in `scripts/community-extra.txt`,
+each resolved to its latest GitHub release. Those extra plugins are not
+reviewed by anybody: this repository only republishes them, and Silo installs
+them as an external source.
 
 The `multimedia/silo` FreeBSD port additionally points its managed
 "Silo maintained" repository at the official catalog, so the default plugins
@@ -41,14 +47,17 @@ signed run.
 
 Two jq filters turn the upstream feeds into builder input: `official-catalog.jq`
 requires `silo.tmdb`, `silo.tvdb` and `silo.theintrodb` and keeps only the
-official feed, `community-catalog.jq` mirrors the whole community feed. Both
-reject malformed entries and duplicate plugin IDs.
+official feed, `community-catalog.jq` mirrors the whole community feed and
+appends the extras from `scripts/community-extra.txt`. Both reject malformed
+entries and duplicate plugin IDs; the community filter rejects a duplicate
+across the feed and the extras too.
 
 `.github/workflows/catalog.yml` runs on a schedule / manual dispatch and builds
 both catalogs in one run: the official manifest from
 [Silo-Server/silo-plugins](https://github.com/Silo-Server/silo-plugins) and the
 community manifest from
-[Silo-Community/silo-plugins](https://github.com/Silo-Community/silo-plugins).
+[Silo-Community/silo-plugins](https://github.com/Silo-Community/silo-plugins)
+plus the extras in `scripts/community-extra.txt`.
 It is **incremental**: only plugins whose upstream version is new (or that lack
 a FreeBSD build) are compiled. Unchanged plugins keep pointing at the release
 that built them. When there are changes it attests all binaries once, publishes

@@ -165,6 +165,11 @@ while [ "$i" -lt "$count" ]; do
 		fi
 	done
 
+	# Some repos ship no go.sum (and no vendor dir); -mod=mod generates one in
+	# the throwaway clone, which is deleted below.
+	modflag=""
+	[ -f "$src/go.sum" ] || modflag="-mod=mod"
+
 	binaries='{}'
 	built_here=0
 	failed=0
@@ -184,7 +189,7 @@ while [ "$i" -lt "$count" ]; do
 			( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" \
 				"${MAKE:-make}" build VERSION="$version" >/dev/null && mv plugin "$out" ) \
 				&& built_ok=1
-		elif ( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" "$GO" build -trimpath \
+		elif ( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" "$GO" build $modflag -trimpath \
 			-ldflags "-s -w -X main.version=$version" -o "$out" . ); then
 			built_ok=1
 		fi

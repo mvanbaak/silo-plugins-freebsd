@@ -1,0 +1,5 @@
+# Repositories that the community catalog carries in addition to the
+# Silo-Community feed. One https://github.com/OWNER/REPO URL per line; the
+# workflow resolves each to its latest GitHub release and copies that release's
+# manifest.json. Blank lines and # comments are ignored.
+https://github.com/BEisem/silo-plex-artwork-sync

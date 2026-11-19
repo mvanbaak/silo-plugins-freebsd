@@ -49,12 +49,62 @@ jobs:
           cache: false
 
       - name: Fetch upstream catalogs
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           curl -fsSL https://raw.githubusercontent.com/Silo-Server/silo-plugins/main/manifest.json -o "$RUNNER_TEMP/official.json"
           curl -fsSL https://raw.githubusercontent.com/Silo-Community/silo-plugins/main/manifest.json -o "$RUNNER_TEMP/community.json"
+
+          # Repositories the community catalog carries beyond the Silo-Community
+          # feed. Each one is resolved to its latest GitHub release; the builder
+          # clones v<manifest.version>, so the tag and the manifest must agree.
+          entries="$RUNNER_TEMP/community-extra-entries.jsonl"
+          : > "$entries"
+          while IFS= read -r line || [ -n "$line" ]; do
+            url=${line%%#*}
+            url=$(printf '%s' "$url" | tr -d '[:space:]')
+            [ -n "$url" ] || continue
+            case "$url" in
+              https://github.com/*/*) ;;
+              *) echo "::error::$url: not an https://github.com/OWNER/REPO URL"; exit 1 ;;
+            esac
+            repo=${url#https://github.com/}
+            case "$repo" in
+              */*/*|*' '*|*'?'*|*'#'*) echo "::error::$url: not an https://github.com/OWNER/REPO URL"; exit 1 ;;
+            esac
+            tag=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name // empty')
+            case "$tag" in
+              v?*) ;;
+              *) echo "::error::$url: latest GitHub release tag '$tag' is not v<version>"; exit 1 ;;
+            esac
+            if ! curl -fsSL "https://raw.githubusercontent.com/$repo/$tag/manifest.json" \
+              -o "$RUNNER_TEMP/community-extra-manifest.json"; then
+              echo "::error::$url: no manifest.json at $tag"; exit 1
+            fi
+            if ! problem=$(jq -r --arg version "${tag#v}" '
+              if type != "object" then "manifest.json is not a JSON object"
+              elif (.plugin_id | type) != "string" or .plugin_id == "" then "manifest.plugin_id is not a non-empty string"
+              elif .version != $version then "manifest.version \(.version // "missing") does not match release tag v\($version)"
+              else empty end
+            ' "$RUNNER_TEMP/community-extra-manifest.json" 2>&1); then
+              echo "::error::$url: $problem"
+              exit 1
+            fi
+            if [ -n "$problem" ]; then
+              echo "::error::$url: $problem"
+              exit 1
+            fi
+            jq -c --arg url "$url" '{manifest: ., repo_url: $url}' \
+              "$RUNNER_TEMP/community-extra-manifest.json" >> "$entries"
+          done < "$GITHUB_WORKSPACE/scripts/community-extra.txt"
+          jq -s '{plugins: .}' "$entries" > "$RUNNER_TEMP/community-extra.json"
+
           jq -n --slurpfile official "$RUNNER_TEMP/official.json" -f "$GITHUB_WORKSPACE/scripts/official-catalog.jq" > "$RUNNER_TEMP/upstream-official.json"
-          jq -n --slurpfile community "$RUNNER_TEMP/community.json" -f "$GITHUB_WORKSPACE/scripts/community-catalog.jq" > "$RUNNER_TEMP/upstream-community.json"
+          jq -n --slurpfile community "$RUNNER_TEMP/community.json" \
+            --slurpfile extra "$RUNNER_TEMP/community-extra.json" \
+            -f "$GITHUB_WORKSPACE/scripts/community-catalog.jq" > "$RUNNER_TEMP/upstream-community.json"
           # Both catalogs publish binaries into one dist/ and one release, so an
           # id in both feeds would overwrite a binary one manifest already lists.
           dup=$(jq -nr \

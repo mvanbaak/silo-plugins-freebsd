@@ -9,7 +9,7 @@ import unittest
 _DEFAULT = object()
 
 
-def make_source_repo(root, version, with_makefile=False):
+def make_source_repo(root, version, with_makefile=False, with_gosum=False):
     src = os.path.join(root, "src.git")
     os.makedirs(src, exist_ok=True)
     subprocess.run(["git", "init", "--bare", "-b", "main", src], check=True, capture_output=True)
@@ -21,6 +21,11 @@ def make_source_repo(root, version, with_makefile=False):
     with open(os.path.join(work, "go.mod"), "w") as f:
         f.write('module example.com/testplugin\n\ngo 1.21\n')
     files = ["main.go", "go.mod"]
+    if with_gosum:
+        # Some plugins ship their sums; those builds must not be retargeted.
+        with open(os.path.join(work, "go.sum"), "w"):
+            pass
+        files.append("go.sum")
     if with_makefile:
         # Mirrors plugins that patch a dependency in a prepare step and build
         # through their own Makefile.
@@ -77,13 +82,13 @@ class BuildCatalogTests(unittest.TestCase):
             json.dump({"plugins": []}, f)
 
     def run_script(self, arches="amd64", bundle_url=None, force=False, existing=_DEFAULT,
-                   manifest=None, built=None, upstream=None):
+                   manifest=None, built=None, upstream=None, go=None):
         env = dict(os.environ)
         env["GIT_CONFIG_GLOBAL"] = self.gitconfig
         env["GIT_CONFIG_NOSYSTEM"] = "1"
         env["ARCHES"] = arches
         env["UPSTREAM"] = "file://" + (upstream or self.upstream)
-        env["GO"] = "go"
+        env["GO"] = go or "go"
         if bundle_url:
             env["BUNDLE_URL"] = bundle_url
         if force:
@@ -299,6 +304,34 @@ class BuildCatalogTests(unittest.TestCase):
         self.assertTrue(self.read_built().strip())
         self.assertEqual(self.read_manifest(community_manifest)["plugins"][0]["manifest"]["plugin_id"],
                          "test.plugin")
+
+    def fake_go(self):
+        log = os.path.join(self.tmp, "go-args.log")
+        path = os.path.join(self.tmp, "fake-go")
+        with open(path, "w") as f:
+            f.write('#!/bin/sh\nprintf "%%s\\n" "$*" >> "%s"\nexec "%s" "$@"\n'
+                    % (log, shutil.which("go")))
+        os.chmod(path, 0o755)
+        return path
+
+    def go_args(self):
+        with open(os.path.join(self.tmp, "go-args.log")) as f:
+            return f.read()
+
+    def test_missing_go_sum_builds_with_mod_mod(self):
+        r = self.run_script(bundle_url="https://example.com/bundle.json", go=self.fake_go())
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertTrue(self.read_built().strip())
+        self.assertIn("-mod=mod", self.go_args())
+
+    def test_shipped_go_sum_builds_without_mod_mod(self):
+        shutil.rmtree(self.src)
+        shutil.rmtree(os.path.join(self.tmp, "work"))
+        self.src = make_source_repo(self.tmp, self.version, with_gosum=True)
+        r = self.run_script(bundle_url="https://example.com/bundle.json", go=self.fake_go())
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertTrue(self.read_built().strip())
+        self.assertNotIn("-mod=mod", self.go_args())
 
 
 if __name__ == "__main__":
