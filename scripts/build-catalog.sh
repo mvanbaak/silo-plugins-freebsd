@@ -13,7 +13,7 @@
 #     MAKE       make binary          (default: make; used by repos whose
 #                                     Makefile declares a prepare step)
 #     ARCHES     GOARCH list          (default: amd64; e.g. "amd64 arm64")
-#     UPSTREAM   upstream catalog URL (default: Silo-Server/silo-plugins main)
+#     UPSTREAM   catalog listing the plugins to build (required)
 #     FORCE=1    rebuild every arch, not only the missing ones
 #     BUILT      build list to write        (default: <repo>/built.txt)
 #
@@ -28,7 +28,9 @@ set -eu
 
 GO=${GO:-go}
 ARCHES=${ARCHES:-amd64}
-UPSTREAM=${UPSTREAM:-https://raw.githubusercontent.com/Silo-Server/silo-plugins/main/manifest.json}
+# Required: defaulting to the official Silo feed would build official plugins
+# and drop every entry this repository publishes.
+UPSTREAM=${UPSTREAM:?set UPSTREAM to the catalog listing the plugins to build}
 ASSET_BASE=${1:?usage: $0 <asset-base-url>}
 ASSET_BASE=${ASSET_BASE%/}
 
