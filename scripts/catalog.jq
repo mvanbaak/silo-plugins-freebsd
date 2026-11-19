@@ -1,6 +1,5 @@
-# Builder input index for the EXTRAS FreeBSD catalog.
-# Only plugins that neither Silo feed ships, one per repository listed in
-# scripts/extras.txt.
+# Builder input index for the FreeBSD catalog: the plugins listed in
+# scripts/plugins.txt, one per repository.
 (($ARGS.named.extra // [])[0] // {plugins: []}) as $e
 | if ($e | type) != "object" then error("extras input must be a JSON object") else . end
 | if ($e.plugins | type) != "array" then error("extras plugins must be an array") else . end
