@@ -206,8 +206,7 @@ class BuildCatalogTests(unittest.TestCase):
                                    capture_output=True, text=True)
                 self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
                 self.assertEqual(self.read_manifest(), {"plugins": []})
-                _built = os.path.join(self.repo, "built.txt")
-                self.assertEqual(Path(_built).read_text().strip() if os.path.exists(_built) else "", "")
+                self.assertEqual(Path(built).read_text().strip() if os.path.exists(built) else "", "")
                 self.assertEqual(set(os.listdir(dist)), pre_files)
 
     def test_no_change_behavior(self):
