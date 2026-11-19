@@ -10,42 +10,58 @@ catalog Silo can consume.
 
 ## Use it
 
-In Silo: **Admin → Plugins → Repositories → add this URL**, enabled:
+This repository publishes two catalogs from the same signed release:
 
-```
-https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/manifest.json
-```
+| Catalog | URL | Contents |
+| --- | --- | --- |
+| Official | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/manifest.json` | Only the plugins from Silo's official catalog |
+| Community | `https://raw.githubusercontent.com/mvanbaak/silo-plugins-freebsd/main/community-manifest.json` | Only the plugins from the Silo community catalog |
+
+In Silo: **Admin → Plugins → Repositories → add this URL**, enabled. Add the
+official one first; add the community one as a second repository if you want
+those plugins too.
 
 Then install plugins from **Admin → Plugins → Catalog**.
 
 The `multimedia/silo` FreeBSD port additionally points its managed
-"Silo maintained" repository at this catalog, so the default plugins
-(`silo.tmdb`, `silo.tvdb`, `silo.theintrodb`) install automatically.
+"Silo maintained" repository at the official catalog, so the default plugins
+(`silo.tmdb`, `silo.tvdb`, `silo.theintrodb`) install automatically. The
+community plugins are never part of that catalog.
 
 ## How it works
 
-`scripts/build-catalog.sh` fetches the upstream catalog, clones each plugin at
+`scripts/build-catalog.sh` fetches one upstream catalog, clones each plugin at
 its exact release tag (no fallback to upstream main), cross-compiles with
-`GOOS=freebsd CGO_ENABLED=0 go build`, computes checksums, and writes
-`manifest.json` (mirroring upstream manifests, adding `freebsd` to
-`supported_platforms` and a `freebsd/<arch>` binary). New entries carry a
-package-level `bundle_url` pointing at the Sigstore bundle published beside
-the binaries; unsigned legacy entries are rebuilt on the first signed run.
+`GOOS=freebsd CGO_ENABLED=0 go build`, computes checksums, and rewrites the
+catalog it was pointed at (`MANIFEST`, default `manifest.json`) with
+`freebsd` added to `supported_platforms` and a `freebsd/<arch>` binary. New
+entries carry a package-level `bundle_url` pointing at the Sigstore bundle
+published beside the binaries; unsigned legacy entries are rebuilt on the first
+signed run.
 
-`.github/workflows/catalog.yml` runs it on a schedule / manual dispatch. It
-fetches the official and approved community catalogs, then merges them with
-`scripts/merge-upstream.jq` (official entries plus only `silo.requests.arr` and
-`silo.requests.seerr`). It is **incremental**: only plugins whose upstream
-version is new (or that lack a FreeBSD build) are compiled. Unchanged plugins
-keep pointing at the release that built them. When there are changes it
-publishes a new immutable release tagged `catalog-<UTC timestamp>` containing
-just those binaries, and commits the refreshed `manifest.json`. When nothing
-changed it does nothing — no build, no release, no commit.
+Two jq filters turn the upstream feeds into builder input: `official-catalog.jq`
+requires `silo.tmdb`, `silo.tvdb` and `silo.theintrodb` and keeps only the
+official feed, `community-catalog.jq` mirrors the whole community feed. Both
+reject malformed entries and duplicate plugin IDs.
 
-The archived `silo.watchprovider.trakt` entry was removed from this catalog;
-existing installs are not affected.
+`.github/workflows/catalog.yml` runs on a schedule / manual dispatch and builds
+both catalogs in one run: the official manifest from
+[Silo-Server/silo-plugins](https://github.com/Silo-Server/silo-plugins) and the
+community manifest from
+[Silo-Community/silo-plugins](https://github.com/Silo-Community/silo-plugins).
+It is **incremental**: only plugins whose upstream version is new (or that lack
+a FreeBSD build) are compiled. Unchanged plugins keep pointing at the release
+that built them. When there are changes it attests all binaries once, publishes
+one new immutable release tagged `catalog-<UTC timestamp>` containing just those
+binaries plus a single `plugin.sigstore.json`, and commits the refreshed
+manifests; both manifests may reference that same bundle. When nothing changed
+it does nothing — no build, no release, no commit.
 
-Run it locally too:
+The archived `silo.watchprovider.trakt` entry was removed from the official
+catalog; existing installs are not affected.
+
+Run it locally too (repeat with `MANIFEST`/`UPSTREAM`/`BUILT` for the second
+catalog):
 
 ```sh
 GO=go126 ./scripts/build-catalog.sh \

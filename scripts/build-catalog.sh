@@ -7,20 +7,29 @@
 #     asset-base-url     URL prefix the binaries built THIS run are published
 #                        under, e.g.
 #                        https://github.com/OWNER/REPO/releases/download/catalog-20261015T0417Z
-#     existing-manifest  our current catalog (default: <repo>/manifest.json)
+#     existing-manifest  our current catalog (default: $MANIFEST)
 #
 #   Environment:
 #     GO         go binary            (default: go)
+#     MAKE       make binary          (default: make; used by repos whose
+#                                     Makefile declares a prepare step)
 #     ARCHES     GOARCH list          (default: amd64; e.g. "amd64 arm64")
 #     UPSTREAM   upstream catalog URL (default: Silo-Server/silo-plugins main)
 #     ALLOWLIST  optional file of plugin IDs to consider (one per line)
 #     FORCE=1    rebuild every arch, not only the missing ones
 #     BUNDLE_URL package-level Sigstore bundle URL written to new entries
+#     MANIFEST   catalog to read and rewrite (default: <repo>/manifest.json)
+#     BUILT      build list to write        (default: <repo>/built.txt)
+#     DIST       binary output directory    (default: <repo>/dist)
 #
-#   Outputs (under <repo>):
-#     manifest.json   rewritten only when something was built
-#     dist/*          the newly built binaries
-#     built.txt       "<plugin_id> <version> <arch>" per built binary; empty when
+#   Two catalogs can be built in one run by calling this twice with different
+#   MANIFEST/UPSTREAM and the same DIST (file names are per plugin, so they do
+#   not collide) plus a BUILT path each.
+#
+#   Outputs:
+#     $MANIFEST       rewritten only when something was built
+#     $DIST/*         the newly built binaries
+#     $BUILT          "<plugin_id> <version> <arch>" per built binary; empty when
 #                     nothing changed
 #
 #   Requires: git, go >= 1.26, curl, jq, sha256sum or shasum, network.
@@ -33,10 +42,13 @@ ASSET_BASE=${1:?usage: $0 <asset-base-url> [existing-manifest]}
 ASSET_BASE=${ASSET_BASE%/}
 
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-existing=${2:-$root/manifest.json}
-dist="$root/dist"
-built="$root/built.txt"
+out_manifest=${MANIFEST:-$root/manifest.json}
+existing=${2:-$out_manifest}
+dist=${DIST:-$root/dist}
+built=${BUILT:-$root/built.txt}
 mkdir -p "$dist"
+mkdir -p "$(dirname -- "$built")"
+mkdir -p "$(dirname -- "$out_manifest")"
 : > "$built"
 
 tmp=$(mktemp -d)
@@ -164,11 +176,22 @@ while [ "$i" -lt "$count" ]; do
 		# Silo refuses an install whose binary reports a different version than the
 		# catalog lists, and a plugin reports main.version, which only the linker
 		# sets: without -X it keeps the version frozen in its embedded manifest.json.
-		if ( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" "$GO" build -trimpath \
+		# A repo that declares a prepare step needs its own pipeline (it patches a
+		# dependency and points GOFLAGS at the patched tree), so use its Makefile,
+		# which runs prepare and writes ./plugin with the version ldflags.
+		built_ok=0
+		if grep -q '^prepare:' "$src/Makefile" 2>/dev/null; then
+			( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" \
+				"${MAKE:-make}" build VERSION="$version" >/dev/null && mv plugin "$out" ) \
+				&& built_ok=1
+		elif ( cd "$src" && CGO_ENABLED=0 GOOS=freebsd GOARCH="$arch" "$GO" build -trimpath \
 			-ldflags "-s -w -X main.version=$version" -o "$out" . ); then
+			built_ok=1
+		fi
+		if [ "$built_ok" = 1 ]; then
 			# -X is a silent no-op on a symbol that does not exist, so check both
 			# ends: the variable is declared, and the binary carries the version.
-			if ! grep -q 'var version string' "$src/main.go" 2>/dev/null ||
+			if ! grep -q 'var version' "$src/main.go" 2>/dev/null ||
 				! strings -a "$out" | grep -qxF "$version"; then
 				echo "  !! $id $version does not report its version; not publishing"
 				rm -f "$out"
@@ -224,8 +247,8 @@ if ls "$tmp/upd"/*.json >/dev/null 2>&1; then
 			+ $up[0]
 		)
 	' "$existing" > "$tmp/manifest.new.json"
-	mv "$tmp/manifest.new.json" "$root/manifest.json"
-	echo "==> wrote $root/manifest.json ($(wc -l < "$built" | tr -d ' ') binaries)"
+	mv "$tmp/manifest.new.json" "$out_manifest"
+	echo "==> wrote $out_manifest ($(wc -l < "$built" | tr -d ' ') binaries)"
 else
-	echo "==> no changes; manifest.json left untouched"
+	echo "==> no changes; $out_manifest left untouched"
 fi

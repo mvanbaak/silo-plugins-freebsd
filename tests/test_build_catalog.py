@@ -6,8 +6,10 @@ import subprocess
 import tempfile
 import unittest
 
+_DEFAULT = object()
 
-def make_source_repo(root, version):
+
+def make_source_repo(root, version, with_makefile=False):
     src = os.path.join(root, "src.git")
     os.makedirs(src, exist_ok=True)
     subprocess.run(["git", "init", "--bare", "-b", "main", src], check=True, capture_output=True)
@@ -18,7 +20,15 @@ def make_source_repo(root, version):
         f.write('package main\nimport "fmt"\nvar version string\nfunc main(){fmt.Println(version)}\n')
     with open(os.path.join(work, "go.mod"), "w") as f:
         f.write('module example.com/testplugin\n\ngo 1.21\n')
-    subprocess.run(["git", "-C", work, "add", "main.go", "go.mod"], check=True, capture_output=True)
+    files = ["main.go", "go.mod"]
+    if with_makefile:
+        # Mirrors plugins that patch a dependency in a prepare step and build
+        # through their own Makefile.
+        with open(os.path.join(work, "Makefile"), "w") as f:
+            f.write('prepare:\n\t@true\n\nbuild: prepare\n'
+                    '\tCGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o plugin .\n')
+        files.append("Makefile")
+    subprocess.run(["git", "-C", work, "add"] + files, check=True, capture_output=True)
     subprocess.run(["git", "-C", work, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "init"], check=True, capture_output=True)
     subprocess.run(["git", "-C", work, "tag", f"v{version}"], check=True, capture_output=True)
     subprocess.run(["git", "-C", work, "push", "origin", "main"], check=True, capture_output=True)
@@ -27,7 +37,7 @@ def make_source_repo(root, version):
     return src
 
 
-def make_upstream(root, plugin_id, version, repo_url):
+def make_upstream(root, plugin_id, version, repo_url, name="upstream.json"):
     manifest = {
         "plugin_id": plugin_id,
         "version": version,
@@ -36,7 +46,7 @@ def make_upstream(root, plugin_id, version, repo_url):
         "capabilities": [],
     }
     upstream = {"plugins": [{"manifest": manifest, "repo_url": repo_url}]}
-    path = os.path.join(root, "upstream.json")
+    path = os.path.join(root, name)
     with open(path, "w") as f:
         json.dump(upstream, f)
     return path
@@ -66,31 +76,40 @@ class BuildCatalogTests(unittest.TestCase):
         with open(self.existing, "w") as f:
             json.dump({"plugins": []}, f)
 
-    def run_script(self, arches="amd64", bundle_url=None, force=False, existing=None):
+    def run_script(self, arches="amd64", bundle_url=None, force=False, existing=_DEFAULT,
+                   manifest=None, built=None, upstream=None):
         env = dict(os.environ)
         env["GIT_CONFIG_GLOBAL"] = self.gitconfig
         env["GIT_CONFIG_NOSYSTEM"] = "1"
         env["ARCHES"] = arches
-        env["UPSTREAM"] = "file://" + self.upstream
+        env["UPSTREAM"] = "file://" + (upstream or self.upstream)
         env["GO"] = "go"
         if bundle_url:
             env["BUNDLE_URL"] = bundle_url
         if force:
             env["FORCE"] = "1"
+        if manifest:
+            env["MANIFEST"] = manifest
+        if built:
+            env["BUILT"] = built
+        if existing is _DEFAULT:
+            existing = self.existing
         args = [os.path.join(self.repo, "scripts", "build-catalog.sh"),
-                "https://example.com/releases/download/test", existing or self.existing]
+                "https://example.com/releases/download/test"]
+        if existing:
+            args.append(existing)
         r = subprocess.run(args, cwd=self.repo, env=env, capture_output=True, text=True)
         return r
 
-    def read_built(self):
-        p = os.path.join(self.repo, "built.txt")
+    def read_built(self, path=None):
+        p = path or os.path.join(self.repo, "built.txt")
         if not os.path.exists(p):
             return ""
         with open(p) as f:
             return f.read()
 
-    def read_manifest(self):
-        with open(os.path.join(self.repo, "manifest.json")) as f:
+    def read_manifest(self, path=None):
+        with open(path or os.path.join(self.repo, "manifest.json")) as f:
             return json.load(f)
 
     def test_unsigned_migration_rebuilds(self):
@@ -174,7 +193,7 @@ class BuildCatalogTests(unittest.TestCase):
         with open(self.existing) as f:
             m = json.load(f)
         self.assertEqual(m["plugins"], [])
-        self.assertFalse(os.path.exists(os.path.join(self.repo, "dist", "test-plugin-freebsd-amd64")))
+        self.assertFalse(os.path.exists(os.path.join(self.repo, "dist", "test.plugin-freebsd-amd64")))
 
     def test_invalid_inputs_rejected(self):
         cases = [
@@ -227,6 +246,59 @@ class BuildCatalogTests(unittest.TestCase):
         r = self.run_script(bundle_url="https://example.com/bundle.json")
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertEqual(self.read_built().strip(), "")
+
+
+    # Two catalogs in one run: separate manifests and build lists, shared dist.
+    def test_two_manifests_share_dist_but_not_build_lists(self):
+        official = make_upstream(self.tmp, "test.plugin", self.version, self.repo_url,
+                                 "upstream-official.json")
+        community = make_upstream(self.tmp, "test.community", self.version, self.repo_url,
+                                  "upstream-community.json")
+        official_manifest = os.path.join(self.repo, "manifest.json")
+        community_manifest = os.path.join(self.repo, "community-manifest.json")
+        official_built = os.path.join(self.repo, "built-official.txt")
+        community_built = os.path.join(self.repo, "built-community.txt")
+        bundle = "https://example.com/bundle.json"
+
+        r = self.run_script(bundle_url=bundle, existing=official_manifest,
+                            manifest=official_manifest, built=official_built, upstream=official)
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        r = self.run_script(bundle_url=bundle, existing=community_manifest,
+                            manifest=community_manifest, built=community_built, upstream=community)
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+
+        self.assertEqual([p["manifest"]["plugin_id"]
+                          for p in self.read_manifest(official_manifest)["plugins"]], ["test.plugin"])
+        self.assertEqual([p["manifest"]["plugin_id"]
+                          for p in self.read_manifest(community_manifest)["plugins"]], ["test.community"])
+        self.assertTrue(self.read_built(official_built).strip())
+        self.assertTrue(self.read_built(community_built).strip())
+        self.assertEqual(self.read_built(official_built).split()[0], "test.plugin")
+        self.assertEqual(self.read_built(community_built).split()[0], "test.community")
+        self.assertTrue(os.path.exists(os.path.join(self.repo, "dist", "test.plugin-freebsd-amd64")))
+        self.assertTrue(os.path.exists(os.path.join(self.repo, "dist", "test.community-freebsd-amd64")))
+
+    def test_prepare_step_builds_through_plugin_makefile(self):
+        shutil.rmtree(self.src)
+        shutil.rmtree(os.path.join(self.tmp, "work"))
+        self.src = make_source_repo(self.tmp, self.version, with_makefile=True)
+        r = self.run_script(bundle_url="https://example.com/bundle.json")
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertTrue(self.read_built().strip())
+        entry = self.read_manifest()["plugins"][0]
+        self.assertEqual(entry["manifest"]["plugin_id"], "test.plugin")
+        self.assertIn("freebsd/amd64", entry["binaries"])
+
+    def test_manifest_only_selection_keeps_default_built_path(self):
+        # MANIFEST alone: existing defaults to it, built.txt default still used.
+        community_manifest = os.path.join(self.repo, "community-manifest.json")
+        r = self.run_script(bundle_url="https://example.com/bundle.json", existing=None,
+                            manifest=community_manifest)
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertTrue(os.path.exists(community_manifest))
+        self.assertTrue(self.read_built().strip())
+        self.assertEqual(self.read_manifest(community_manifest)["plugins"][0]["manifest"]["plugin_id"],
+                         "test.plugin")
 
 
 if __name__ == "__main__":
