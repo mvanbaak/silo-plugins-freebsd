@@ -2,12 +2,11 @@
 # Incrementally build FreeBSD binaries for plugins whose upstream version is new,
 # or that are missing a FreeBSD build for an arch, and refresh manifest.json.
 #
-#   Usage: ./scripts/build-catalog.sh <asset-base-url> [existing-manifest]
+#   Usage: ./scripts/build-catalog.sh <asset-base-url>
 #
-#     asset-base-url     URL prefix the binaries built THIS run are published
-#                        under, e.g.
-#                        https://github.com/OWNER/REPO/releases/download/catalog-20261015T0417Z
-#     existing-manifest  our current catalog (default: $MANIFEST)
+#     asset-base-url  URL prefix the binaries built THIS run are published
+#                     under, e.g.
+#                     https://github.com/OWNER/REPO/releases/download/catalog-20261015T0417Z
 #
 #   Environment:
 #     GO         go binary            (default: go)
@@ -15,22 +14,14 @@
 #                                     Makefile declares a prepare step)
 #     ARCHES     GOARCH list          (default: amd64; e.g. "amd64 arm64")
 #     UPSTREAM   upstream catalog URL (default: Silo-Server/silo-plugins main)
-#     ALLOWLIST  optional file of plugin IDs to consider (one per line)
 #     FORCE=1    rebuild every arch, not only the missing ones
-#     BUNDLE_URL package-level Sigstore bundle URL written to new entries
-#     MANIFEST   catalog to read and rewrite (default: <repo>/manifest.json)
 #     BUILT      build list to write        (default: <repo>/built.txt)
-#     DIST       binary output directory    (default: <repo>/dist)
-#
-#   Two catalogs can be built in one run by calling this twice with different
-#   MANIFEST/UPSTREAM and the same DIST (file names are per plugin, so they do
-#   not collide) plus a BUILT path each.
 #
 #   Outputs:
-#     $MANIFEST       rewritten only when something was built
-#     $DIST/*         the newly built binaries
-#     $BUILT          "<plugin_id> <version> <arch>" per built binary; empty when
-#                     nothing changed
+#     <repo>/manifest.json  rewritten only when it changed
+#     <repo>/dist/*         the newly built binaries
+#     $BUILT                "<plugin_id> <version> <arch>" per built binary; empty
+#                           when nothing changed
 #
 #   Requires: git, go >= 1.26, curl, jq, sha256sum or shasum, network.
 set -eu
@@ -38,17 +29,16 @@ set -eu
 GO=${GO:-go}
 ARCHES=${ARCHES:-amd64}
 UPSTREAM=${UPSTREAM:-https://raw.githubusercontent.com/Silo-Server/silo-plugins/main/manifest.json}
-ASSET_BASE=${1:?usage: $0 <asset-base-url> [existing-manifest]}
+ASSET_BASE=${1:?usage: $0 <asset-base-url>}
 ASSET_BASE=${ASSET_BASE%/}
 
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-out_manifest=${MANIFEST:-$root/manifest.json}
-existing=${2:-$out_manifest}
-dist=${DIST:-$root/dist}
+out_manifest=$root/manifest.json
+existing=$out_manifest
+dist=$root/dist
 built=${BUILT:-$root/built.txt}
 mkdir -p "$dist"
 mkdir -p "$(dirname -- "$built")"
-mkdir -p "$(dirname -- "$out_manifest")"
 : > "$built"
 
 tmp=$(mktemp -d)
@@ -70,10 +60,6 @@ while [ "$i" -lt "$count" ]; do
 
 	if [ -z "$repo" ]; then
 		echo "skip $id (no repo_url)"
-		continue
-	fi
-	if [ -n "${ALLOWLIST:-}" ] && [ -f "$ALLOWLIST" ] && ! grep -qxF "$id" "$ALLOWLIST"; then
-		echo "skip $id (not in $ALLOWLIST)"
 		continue
 	fi
 
@@ -119,12 +105,11 @@ while [ "$i" -lt "$count" ]; do
 	' "$existing" 2>/dev/null | head -1)
 	existing_bins=$(printf '%s' "$existing_entry" | jq -c '.binaries // {}' 2>/dev/null)
 	[ -n "$existing_bins" ] || existing_bins='{}'
-	existing_bundle=$(printf '%s' "$existing_entry" | jq -r '.bundle_url // empty' 2>/dev/null)
 
-	# Reuse only signed complete entries: bundle_url present and every requested
-	# arch already built. Otherwise rebuild all requested arches (never mix).
+	# Binaries already published for this exact version are reused; only the
+	# arches we are missing (all of them when the version changed) get built.
 	reusable=0
-	if [ "${FORCE:-0}" != 1 ] && [ -n "$existing_bundle" ] && [ -n "$existing_entry" ]; then
+	if [ "${FORCE:-0}" != 1 ] && [ -n "$existing_entry" ]; then
 		reusable=1
 		for arch in $ARCHES; do
 			if ! printf '%s' "$existing_bins" | jq -e --arg a "$arch" 'has("freebsd/" + $a)' >/dev/null 2>&1; then
@@ -229,31 +214,25 @@ while [ "$i" -lt "$count" ]; do
 		printf '%s %s %s\n' "$id" "$version" "$arch" >> "$built"
 	done
 
-	entry_bundle="${BUNDLE_URL:-}"
-	[ "$reusable" = 1 ] && entry_bundle="$existing_bundle"
-
-	if [ -n "$entry_bundle" ]; then
-		jq -cn --argjson m "$sp" --arg r "$repo" --argjson b "$binaries" --arg bu "$entry_bundle" \
-			'{manifest:$m, repo_url:$r, binaries:$b, bundle_url:$bu}' > "$tmp/upd/$slug.json"
-	else
-		jq -cn --argjson m "$sp" --arg r "$repo" --argjson b "$binaries" \
-			'{manifest:$m, repo_url:$r, binaries:$b}' > "$tmp/upd/$slug.json"
-	fi
+	jq -cn --argjson m "$sp" --arg r "$repo" --argjson b "$binaries" \
+		'{manifest:$m, repo_url:$r, binaries:$b}' > "$tmp/upd/$slug.json"
 done
 
-if ls "$tmp/upd"/*.json >/dev/null 2>&1; then
-	jq -s '.' "$tmp"/upd/*.json > "$tmp/updates.json"
-	[ -f "$existing" ] || printf '{"plugins":[]}' > "$existing"
-	jq --slurpfile up "$tmp/updates.json" '
-		.plugins = (
-			((.plugins // [])
-				| map(select(.manifest.plugin_id as $id
-					| ($up[0] | map(.manifest.plugin_id) | index($id)) | not)))
-			+ $up[0]
-		)
-	' "$existing" > "$tmp/manifest.new.json"
+jq -s '.' "$tmp"/upd/*.json > "$tmp/updates.json" 2>/dev/null || printf '[]' > "$tmp/updates.json"
+[ -f "$existing" ] || printf '{"plugins":[]}' > "$existing"
+jq --slurpfile up "$tmp/updates.json" --slurpfile src "$tmp/upstream.json" '
+	($src[0].plugins | map(.manifest.plugin_id)) as $listed
+	| ($up[0] | map(.manifest.plugin_id)) as $updated
+	| .plugins = (
+		((.plugins // [])
+			| map(select(.manifest.plugin_id as $id
+				| ($listed | index($id)) != null and ($updated | index($id)) == null)))
+		+ $up[0]
+	)
+' "$existing" > "$tmp/manifest.new.json"
+if cmp -s "$tmp/manifest.new.json" "$out_manifest"; then
+	echo "==> no changes; $out_manifest left untouched"
+else
 	mv "$tmp/manifest.new.json" "$out_manifest"
 	echo "==> wrote $out_manifest ($(wc -l < "$built" | tr -d ' ') binaries)"
-else
-	echo "==> no changes; $out_manifest left untouched"
 fi

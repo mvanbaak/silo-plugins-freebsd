@@ -6,9 +6,6 @@ import subprocess
 import tempfile
 import unittest
 
-_DEFAULT = object()
-
-
 def make_source_repo(root, version, with_makefile=False, with_gosum=False):
     src = os.path.join(root, "src.git")
     os.makedirs(src, exist_ok=True)
@@ -81,30 +78,18 @@ class BuildCatalogTests(unittest.TestCase):
         with open(self.existing, "w") as f:
             json.dump({"plugins": []}, f)
 
-    def run_script(self, arches="amd64", bundle_url=None, force=False, existing=_DEFAULT,
-                   manifest=None, built=None, upstream=None, go=None):
+    def run_script(self, arches="amd64", force=False, upstream=None, go=None):
         env = dict(os.environ)
         env["GIT_CONFIG_GLOBAL"] = self.gitconfig
         env["GIT_CONFIG_NOSYSTEM"] = "1"
         env["ARCHES"] = arches
         env["UPSTREAM"] = "file://" + (upstream or self.upstream)
         env["GO"] = go or "go"
-        if bundle_url:
-            env["BUNDLE_URL"] = bundle_url
         if force:
             env["FORCE"] = "1"
-        if manifest:
-            env["MANIFEST"] = manifest
-        if built:
-            env["BUILT"] = built
-        if existing is _DEFAULT:
-            existing = self.existing
         args = [os.path.join(self.repo, "scripts", "build-catalog.sh"),
                 "https://example.com/releases/download/test"]
-        if existing:
-            args.append(existing)
-        r = subprocess.run(args, cwd=self.repo, env=env, capture_output=True, text=True)
-        return r
+        return subprocess.run(args, cwd=self.repo, env=env, capture_output=True, text=True)
 
     def read_built(self, path=None):
         p = path or os.path.join(self.repo, "built.txt")
@@ -117,8 +102,7 @@ class BuildCatalogTests(unittest.TestCase):
         with open(path or os.path.join(self.repo, "manifest.json")) as f:
             return json.load(f)
 
-    def test_unsigned_migration_rebuilds(self):
-        # existing entry same version but no bundle_url
+    def test_unsigned_entry_is_reused(self):
         entry = {
             "manifest": {"plugin_id": "test.plugin", "version": self.version, "silo_api_version": "v1",
                          "supported_platforms": [{"os": "freebsd", "arch": "amd64"}], "capabilities": []},
@@ -127,30 +111,26 @@ class BuildCatalogTests(unittest.TestCase):
         }
         with open(self.existing, "w") as f:
             json.dump({"plugins": [entry]}, f)
-        r = self.run_script(bundle_url="https://example.com/bundle.json")
+        r = self.run_script()
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
-        self.assertTrue(self.read_built().strip(), "expected build")
-        m = self.read_manifest()
-        e = m["plugins"][0]
-        self.assertEqual(e["bundle_url"], "https://example.com/bundle.json")
-        self.assertNotEqual(e["binaries"]["freebsd/amd64"]["url"], "old")
+        self.assertEqual(self.read_built().strip(), "")
+        self.assertEqual(self.read_manifest()["plugins"][0]["binaries"]["freebsd/amd64"]["url"], "old")
 
-    def test_signed_reuse_no_build(self):
+    def test_complete_entry_is_reused(self):
         entry = {
             "manifest": {"plugin_id": "test.plugin", "version": self.version, "silo_api_version": "v1",
                          "supported_platforms": [{"os": "freebsd", "arch": "amd64"}], "capabilities": []},
             "repo_url": self.repo_url,
             "binaries": {"freebsd/amd64": {"url": "old", "checksum": "old"}},
-            "bundle_url": "https://example.com/bundle.json",
         }
         with open(self.existing, "w") as f:
             json.dump({"plugins": [entry]}, f)
-        r = self.run_script(bundle_url="https://example.com/bundle.json")
+        r = self.run_script()
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertEqual(self.read_built().strip(), "")
         m = self.read_manifest()
         self.assertEqual(m["plugins"][0]["binaries"]["freebsd/amd64"]["url"], "old")
-        self.assertEqual(m["plugins"][0]["bundle_url"], "https://example.com/bundle.json")
+        self.assertNotIn("bundle_url", self.read_manifest()["plugins"][0])
 
     def test_missing_arch_rebuilds_all(self):
         entry = {
@@ -158,11 +138,10 @@ class BuildCatalogTests(unittest.TestCase):
                          "supported_platforms": [{"os": "freebsd", "arch": "amd64"}], "capabilities": []},
             "repo_url": self.repo_url,
             "binaries": {"freebsd/amd64": {"url": "old", "checksum": "old"}},
-            "bundle_url": "https://example.com/bundle.json",
         }
         with open(self.existing, "w") as f:
             json.dump({"plugins": [entry]}, f)
-        r = self.run_script(arches="amd64 arm64", bundle_url="https://example.com/bundle.json")
+        r = self.run_script(arches="amd64 arm64")
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         built = self.read_built().strip().splitlines()
         self.assertEqual(len(built), 2)
@@ -176,7 +155,7 @@ class BuildCatalogTests(unittest.TestCase):
             json.dump(entry, f)
         # update upstream path in env by overriding run
         r = subprocess.run([os.path.join(self.repo, "scripts", "build-catalog.sh"),
-                            "https://example.com/releases/download/test", self.existing],
+                            "https://example.com/releases/download/test"],
                            cwd=self.repo, env={**os.environ, "GIT_CONFIG_GLOBAL": self.gitconfig, "GIT_CONFIG_NOSYSTEM": "1", "ARCHES": "amd64", "UPSTREAM": "file://" + self.upstream, "GO": "go"},
                            capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
@@ -188,9 +167,9 @@ class BuildCatalogTests(unittest.TestCase):
         with open(self.existing, "w") as f:
             json.dump(entry, f)
         r = subprocess.run([os.path.join(self.repo, "scripts", "build-catalog.sh"),
-                            "https://example.com/releases/download/test", self.existing],
+                            "https://example.com/releases/download/test"],
                            cwd=self.repo, env={**os.environ, "GIT_CONFIG_GLOBAL": self.gitconfig, "GIT_CONFIG_NOSYSTEM": "1", "ARCHES": "amd64 bogus", "UPSTREAM": "file://" + self.upstream,
-                                            "GO": "go", "BUNDLE_URL": "https://example.com/bundle.json"},
+                                            "GO": "go"},
                            capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         # should not record partial build
@@ -226,14 +205,13 @@ class BuildCatalogTests(unittest.TestCase):
                 if os.path.exists(built):
                     os.remove(built)
                 r = subprocess.run([os.path.join(self.repo, "scripts", "build-catalog.sh"),
-                                    "https://example.com/releases/download/test", existing],
+                                    "https://example.com/releases/download/test"],
                                    cwd=self.repo, env={**os.environ, "GIT_CONFIG_GLOBAL": self.gitconfig,
                                                       "GIT_CONFIG_NOSYSTEM": "1", "ARCHES": " ".join(arches),
-                                                      "UPSTREAM": "file://" + upstream, "GO": "go",
-                                                      "BUNDLE_URL": "https://example.com/bundle.json"},
+                                                      "UPSTREAM": "file://" + upstream, "GO": "go"},
                                    capture_output=True, text=True)
                 self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
-                self.assertEqual(Path(existing).read_bytes(), before)
+                self.assertEqual(json.loads(Path(existing).read_text()), entry)
                 _built = os.path.join(self.repo, "built.txt")
                 self.assertEqual(Path(_built).read_text().strip() if os.path.exists(_built) else "", "")
                 self.assertEqual(set(os.listdir(dist)), pre_files)
@@ -244,66 +222,44 @@ class BuildCatalogTests(unittest.TestCase):
                          "supported_platforms": [{"os": "freebsd", "arch": "amd64"}], "capabilities": []},
             "repo_url": self.repo_url,
             "binaries": {"freebsd/amd64": {"url": "old", "checksum": "old"}},
-            "bundle_url": "https://example.com/bundle.json",
         }
         with open(self.existing, "w") as f:
             json.dump({"plugins": [entry]}, f)
-        r = self.run_script(bundle_url="https://example.com/bundle.json")
+        r = self.run_script()
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertEqual(self.read_built().strip(), "")
 
-
-    # Two catalogs in one run: separate manifests and build lists, shared dist.
-    def test_two_manifests_share_dist_but_not_build_lists(self):
-        official = make_upstream(self.tmp, "test.plugin", self.version, self.repo_url,
-                                 "upstream-official.json")
-        community = make_upstream(self.tmp, "test.community", self.version, self.repo_url,
-                                  "upstream-community.json")
-        official_manifest = os.path.join(self.repo, "manifest.json")
-        community_manifest = os.path.join(self.repo, "thirdparty-manifest.json")
-        official_built = os.path.join(self.repo, "built-official.txt")
-        community_built = os.path.join(self.repo, "built-community.txt")
-        bundle = "https://example.com/bundle.json"
-
-        r = self.run_script(bundle_url=bundle, existing=official_manifest,
-                            manifest=official_manifest, built=official_built, upstream=official)
+    def test_built_entry_has_no_bundle_url(self):
+        r = self.run_script()
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
-        r = self.run_script(bundle_url=bundle, existing=community_manifest,
-                            manifest=community_manifest, built=community_built, upstream=community)
-        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        entry = self.read_manifest()["plugins"][0]
+        self.assertIn("freebsd/amd64", entry["binaries"])
+        self.assertNotIn("bundle_url", entry)
 
-        self.assertEqual([p["manifest"]["plugin_id"]
-                          for p in self.read_manifest(official_manifest)["plugins"]], ["test.plugin"])
-        self.assertEqual([p["manifest"]["plugin_id"]
-                          for p in self.read_manifest(community_manifest)["plugins"]], ["test.community"])
-        self.assertTrue(self.read_built(official_built).strip())
-        self.assertTrue(self.read_built(community_built).strip())
-        self.assertEqual(self.read_built(official_built).split()[0], "test.plugin")
-        self.assertEqual(self.read_built(community_built).split()[0], "test.community")
-        self.assertTrue(os.path.exists(os.path.join(self.repo, "dist", "test.plugin-freebsd-amd64")))
-        self.assertTrue(os.path.exists(os.path.join(self.repo, "dist", "test.community-freebsd-amd64")))
+    def test_entry_dropped_from_upstream_leaves_the_catalog(self):
+        gone = {
+            "manifest": {"plugin_id": "test.gone", "version": self.version, "silo_api_version": "v1",
+                         "supported_platforms": [{"os": "freebsd", "arch": "amd64"}], "capabilities": []},
+            "repo_url": self.repo_url,
+            "binaries": {"freebsd/amd64": {"url": "old", "checksum": "old"}},
+        }
+        with open(self.existing, "w") as f:
+            json.dump({"plugins": [gone]}, f)
+        r = self.run_script()
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertEqual([p["manifest"]["plugin_id"] for p in self.read_manifest()["plugins"]],
+                         ["test.plugin"])
 
     def test_prepare_step_builds_through_plugin_makefile(self):
         shutil.rmtree(self.src)
         shutil.rmtree(os.path.join(self.tmp, "work"))
         self.src = make_source_repo(self.tmp, self.version, with_makefile=True)
-        r = self.run_script(bundle_url="https://example.com/bundle.json")
+        r = self.run_script()
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertTrue(self.read_built().strip())
         entry = self.read_manifest()["plugins"][0]
         self.assertEqual(entry["manifest"]["plugin_id"], "test.plugin")
         self.assertIn("freebsd/amd64", entry["binaries"])
-
-    def test_manifest_only_selection_keeps_default_built_path(self):
-        # MANIFEST alone: existing defaults to it, built.txt default still used.
-        community_manifest = os.path.join(self.repo, "thirdparty-manifest.json")
-        r = self.run_script(bundle_url="https://example.com/bundle.json", existing=None,
-                            manifest=community_manifest)
-        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
-        self.assertTrue(os.path.exists(community_manifest))
-        self.assertTrue(self.read_built().strip())
-        self.assertEqual(self.read_manifest(community_manifest)["plugins"][0]["manifest"]["plugin_id"],
-                         "test.plugin")
 
     def fake_go(self):
         log = os.path.join(self.tmp, "go-args.log")
@@ -319,7 +275,7 @@ class BuildCatalogTests(unittest.TestCase):
             return f.read()
 
     def test_missing_go_sum_builds_with_mod_mod(self):
-        r = self.run_script(bundle_url="https://example.com/bundle.json", go=self.fake_go())
+        r = self.run_script(go=self.fake_go())
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertTrue(self.read_built().strip())
         self.assertIn("-mod=mod", self.go_args())
@@ -328,7 +284,7 @@ class BuildCatalogTests(unittest.TestCase):
         shutil.rmtree(self.src)
         shutil.rmtree(os.path.join(self.tmp, "work"))
         self.src = make_source_repo(self.tmp, self.version, with_gosum=True)
-        r = self.run_script(bundle_url="https://example.com/bundle.json", go=self.fake_go())
+        r = self.run_script(go=self.fake_go())
         self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
         self.assertTrue(self.read_built().strip())
         self.assertNotIn("-mod=mod", self.go_args())
