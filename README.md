@@ -52,6 +52,18 @@ appends the extras from `scripts/community-extra.txt`. Both reject malformed
 entries and duplicate plugin IDs; the community filter rejects a duplicate
 across the feed and the extras too.
 
+A plugin's own `manifest.json` uses protobuf's JSON encoding (protojson), where
+enum fields such as `admin_form.fields[].control` are names like
+`ADMIN_FORM_CONTROL_TEXT`. Silo reads catalog indexes with Go's
+`encoding/json` into the same protobuf message, which only accepts the numeric
+values (`1`). The Silo-Community feed already ships the numeric form, but an
+extra repository's release manifest does not, so `scripts/silocatalog`
+(`normalize`) converts it before the extra entry is assembled. Normalization is
+strict: an unknown field fails the run instead of being dropped, so bumping the
+pinned `silo-plugin-sdk` is the fix when a manifest gains a field. The same tool
+(`check`) decodes both finished catalogs exactly the way Silo does, and the
+workflow fails before attesting or publishing if either no longer decodes.
+
 `.github/workflows/catalog.yml` runs on a schedule / manual dispatch and builds
 both catalogs in one run: the official manifest from
 [Silo-Server/silo-plugins](https://github.com/Silo-Server/silo-plugins) and the

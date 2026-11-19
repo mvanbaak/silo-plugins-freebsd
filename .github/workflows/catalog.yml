@@ -48,6 +48,11 @@ jobs:
           go-version: "stable"
           cache: false
 
+      - name: Build catalog tool
+        run: |
+          set -eu
+          ( cd "$GITHUB_WORKSPACE/scripts/silocatalog" && go build -o "$RUNNER_TEMP/silocatalog" . )
+
       - name: Fetch upstream catalogs
         env:
           GH_TOKEN: ${{ github.token }}
@@ -83,6 +88,15 @@ jobs:
               -o "$RUNNER_TEMP/community-extra-manifest.json"; then
               echo "::error::$url: no manifest.json at $tag"; exit 1
             fi
+            # A plugin's own manifest.json is protojson, so its enums are names;
+            # catalog indexes are decoded with encoding/json, which needs numbers.
+            if ! "$RUNNER_TEMP/silocatalog" normalize "$RUNNER_TEMP/community-extra-manifest.json" \
+              > "$RUNNER_TEMP/community-extra-manifest.json.normalized"; then
+              echo "::error::$url: manifest.json at $tag does not normalize"
+              exit 1
+            fi
+            mv "$RUNNER_TEMP/community-extra-manifest.json.normalized" \
+              "$RUNNER_TEMP/community-extra-manifest.json"
             if ! problem=$(jq -r --arg version "${tag#v}" '
               if type != "object" then "manifest.json is not a JSON object"
               elif (.plugin_id | type) != "string" or .plugin_id == "" then "manifest.plugin_id is not a non-empty string"
@@ -136,6 +150,16 @@ jobs:
             BUILT="$RUNNER_TEMP/built-community.txt" \
             ./scripts/build-catalog.sh "$base"
           cat "$RUNNER_TEMP/built-official.txt" "$RUNNER_TEMP/built-community.txt" > built.txt
+
+      - name: Verify catalogs decode like Silo
+        run: |
+          set -eu
+          for f in "$GITHUB_WORKSPACE/manifest.json" "$GITHUB_WORKSPACE/community-manifest.json"; do
+            if ! "$RUNNER_TEMP/silocatalog" check "$f"; then
+              echo "::error::$f does not decode as Silo reads it"
+              exit 1
+            fi
+          done
 
       - name: Detect changes
         id: detect
