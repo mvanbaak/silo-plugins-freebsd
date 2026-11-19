@@ -1,0 +1,8 @@
+# Plugins this repository builds for FreeBSD because Silo's official and
+# community feeds do not ship them. One https://github.com/OWNER/REPO URL per
+# line; the workflow resolves each to its latest GitHub release and copies that
+# release's manifest.json. Blank lines and # comments are ignored.
+#
+# Only non-first-party plugin ids work here: Silo enforces its own signing
+# policy for silo.* ids and refuses a binary it did not sign.
+https://github.com/BEisem/silo-plex-artwork-sync

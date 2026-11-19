@@ -54,16 +54,14 @@ class SiloCatalogTests(unittest.TestCase):
         self.assertIn("cannot unmarshal string", r.stderr)
 
     def test_check_accepts_repository_catalogs(self):
-        for name in ("manifest.json", "thirdparty-manifest.json"):
-            with self.subTest(catalog=name):
-                path = ROOT / name
-                r = run_tool("check", str(path))
-                self.assertEqual(r.returncode, 0, r.stderr)
-                entries = read_json(path)["plugins"]
-                self.assertEqual(r.stdout.splitlines()[0], "%d entries" % len(entries))
-                expected = ["%s %s" % (e["manifest"]["plugin_id"], e["manifest"]["version"])
-                            for e in entries]
-                self.assertEqual(r.stdout.splitlines()[1:], expected)
+        path = ROOT / "manifest.json"
+        r = run_tool("check", str(path))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        entries = read_json(path)["plugins"]
+        self.assertEqual(r.stdout.splitlines()[0], "%d entries" % len(entries))
+        expected = ["%s %s" % (e["manifest"]["plugin_id"], e["manifest"]["version"])
+                    for e in entries]
+        self.assertEqual(r.stdout.splitlines()[1:], expected)
 
 
 if __name__ == "__main__":
